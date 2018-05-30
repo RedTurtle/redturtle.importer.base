@@ -26,6 +26,9 @@ class CachedCatalogSourceSection(CatalogSourceSection):
         if os.environ.get('remote_password'):
             options.update(
                 {'remote-password': os.environ.get('remote_password')})
+        # sito di prova
+        # options.update({'remote-username': 'admin'})
+        # options.update({'remote-password': 'admin'})
 
         super(CachedCatalogSourceSection, self).__init__(
             transmogrifier, name, options, previous)

@@ -2,6 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:transmogrifier="http://namespaces.plone.org/transmogrifier"
     i18n_domain="redturtle.importer.base">
 
 
@@ -22,38 +23,43 @@
   </unconfigure>
 
   <utility
+      component=".source.CachedCatalogSourceSection"
+      name="redturtle.migration.cachedcatalogsource"
+      />
+
+  <utility
       component=".blueprints.WorkflowHistory"
-      name="redturtle.impoter.base.sections.workflowupdater"
+      name="redturtle.importer.base.sections.workflowupdater"
       />
 
   <utility
       component=".blueprints.DataFields"
-      name="redturtle.impoter.base.sections.datafields"
+      name="redturtle.importer.base.sections.datafields"
       />
 
   <utility
       component=".blueprints.LeftOvers"
-      name="redturtle.impoter.base.leftovers"
+      name="redturtle.importer.base.leftovers"
       />
 
   <utility
       component=".blueprints.Discussions"
-      name="redturtle.impoter.base.discussions"
+      name="redturtle.importer.base.discussions"
       />
 
   <utility
       component=".schemaupdater.DexterityUpdateSection"
-      name="redturtle.impoter.base.schemaupdater"
+      name="redturtle.importer.base.schemaupdater"
       />
 
   <utility
       component=".constructor.ConstructorSection"
-      name="redturtle.impoter.base.sections.constructor"
+      name="redturtle.importer.base.sections.constructor"
       />
 
   <utility
       component=".contentsmapping.ContentsMappingSection"
-      name="redturtle.impoter.base.sections.contentsmapping"
+      name="redturtle.importer.base.sections.contentsmapping"
       />
 
   <!-- <utility
@@ -81,13 +87,13 @@
   <transmogrifier:registerConfig
     name="redturtle.plone5.main"
     title="Migration configuration for querying the catalog of a Plone site"
-    configuration="redturtle_plone5.cfg"
+    configuration="redturtleplone5.cfg"
     />
 
   <browser:page
     for="Products.CMFPlone.interfaces.IPloneSiteRoot"
     name="redturtle_migration_main"
-    class=".migrations.RERPlone5MigrationMain"
+    class=".migrations.RedTurtlePlone5MigrationMain"
     permission="cmf.ManagePortal"
     />
 

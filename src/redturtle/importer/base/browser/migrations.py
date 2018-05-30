@@ -13,13 +13,14 @@ from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
 
 
-class RERPlone5MigrationMain(BrowserView):
+class RedTurtlePlone5MigrationMain(BrowserView):
 
     def __call__(self):
         alsoProvides(self.request, IDisableCSRFProtection)
+
         portal = api.portal.get()
         transmogrifier = Transmogrifier(portal)
-        transmogrifier('rer.plone5.main')
+        transmogrifier('redturtle.plone5.main')
 
         # nel transmogrifier c'e' una lista di tuple:
         # (path, fieldname, value) per le quali vanno rifatte le relations

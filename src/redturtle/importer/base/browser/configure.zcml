@@ -62,6 +62,11 @@
       name="redturtle.importer.base.sections.contentsmapping"
       />
 
+  <utility
+      component=".migrationresults.MigrationResults"
+      name="redturtle.importer.base.migrationresults"
+      />
+
   <!-- <utility
       component=".rer_collection_mapping.RERCollectionMapping"
       name="redturtle.impoter.base.sections.rercollectionmapping"

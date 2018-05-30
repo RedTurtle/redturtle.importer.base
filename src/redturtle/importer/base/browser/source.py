@@ -21,20 +21,34 @@ class CachedCatalogSourceSection(CatalogSourceSection):
     implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
-        if os.environ.get('remote_user'):
-            options.update({'remote-username': os.environ.get('remote_user')})
-        if os.environ.get('remote_password'):
-            options.update(
-                {'remote-password': os.environ.get('remote_password')})
+        # if os.environ.get('remote_user'):
+        #     options.update({'remote-username': os.environ.get('remote_user')})
+        # if os.environ.get('remote_password'):
+        #     options.update(
+        #         {'remote-password': os.environ.get('remote_password')})
         # sito di prova
-        # options.update({'remote-username': 'admin'})
-        # options.update({'remote-password': 'admin'})
+        options.update({'remote-username': 'admin'})
+        options.update({'remote-password': 'admin'})
 
         super(CachedCatalogSourceSection, self).__init__(
             transmogrifier, name, options, previous)
-        self.cache_dir = self.get_option('cache-dir', '/tmp/rermigration')
+
+        # creo tutte le folder dove salvare i file della migrazione
+        self.migration_dir = self.get_option('migration-dir', '/tmp/migration')
+        if not os.path.exists(self.migration_dir):
+            os.makedirs(self.migration_dir)
+
+        # cartella per la cache degli oggetti
+        self.cache_dir = self.get_option(
+            'cache-dir', '/tmp/migration/migration_cache')
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
+
+        # creo il file dove metto le info sugli elementi da migrare
+        file_name = self.get_option('file-name-in', 'migration_content_in.txt')
+        self.file_in = open(self.migration_dir + '/' +
+                            file_name, 'w+')
+
         self.incremental_migration = (
             options.get(
                 'incremental-migration'
@@ -43,6 +57,37 @@ class CachedCatalogSourceSection(CatalogSourceSection):
         self.ignore_cache = (
             options.get('ignore-cache') in ('true', 'True', '1', True, 1)
         )
+
+    def __iter__(self):
+        for item in self.previous:
+            yield item
+
+        for path in self.item_paths:
+            skip = False
+            for skip_path in self.remote_skip_paths:
+                if path.startswith(self.remote_root + skip_path):
+                    skip = True
+
+            # Skip old talkback items
+            if 'talkback' in path:
+                skip = True
+
+            if not skip:
+                item = self.get_remote_item(path)
+
+                if item:
+                    item['_path'] = item['_path'][self.site_path_length:]
+                    item['_auth_info'] = (
+                        self.remote_username, self.remote_password)
+                    item['_site_path_length'] = self.site_path_length
+
+                    # Enable logging
+                    self.storage.append(item['_path'])
+
+                    # ptype = item.get('_type', False)
+                    yield item
+
+        self.file_in.close()
 
     def slugify(self, path):
         # TODO verificare che non ci siano collisioni
@@ -120,4 +165,12 @@ class CachedCatalogSourceSection(CatalogSourceSection):
 
         if item:
             json.dump(item, open(cachefile, 'wb'), indent=2)
+
+        # dovrebbe essere l'oggetto remote che ci siamo importati
+        self.file_in.write('UID: {0}, portal_type: {1}, id: {2}\n'.format(
+            item['_uid'],
+            item['_type'],
+            item['id']
+        ))
+
         return item

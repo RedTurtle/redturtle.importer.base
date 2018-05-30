@@ -4,12 +4,6 @@
     xmlns:plone="http://namespaces.plone.org/plone"
     i18n_domain="redturtle.importer.base">
 
-  <!-- Set overrides folder for Just-a-Bunch-Of-Templates product -->
-  <include package="z3c.jbot" file="meta.zcml" />
-  <browser:jbot
-      directory="overrides"
-      layer="redturtle.importer.base.interfaces.IRedturtleImporterBaseLayer"
-      />
 
   <!-- Publish static files -->
   <plone:static
@@ -17,5 +11,84 @@
       type="plone"
       directory="static"
       />
+
+  <!-- Importer configuration -->
+  <include package="collective.transmogrifier" file="meta.zcml" />
+  <include package="z3c.unconfigure" file="meta.zcml" />
+
+  <include package="transmogrify.dexterity" file="converters.zcml" />
+  <unconfigure>
+    <adapter factory="transmogrify.dexterity.converters.DatetimeDeserializer" />
+  </unconfigure>
+
+  <utility
+      component=".blueprints.WorkflowHistory"
+      name="redturtle.impoter.base.sections.workflowupdater"
+      />
+
+  <utility
+      component=".blueprints.DataFields"
+      name="redturtle.impoter.base.sections.datafields"
+      />
+
+  <utility
+      component=".blueprints.LeftOvers"
+      name="redturtle.impoter.base.leftovers"
+      />
+
+  <utility
+      component=".blueprints.Discussions"
+      name="redturtle.impoter.base.discussions"
+      />
+
+  <utility
+      component=".schemaupdater.DexterityUpdateSection"
+      name="redturtle.impoter.base.schemaupdater"
+      />
+
+  <utility
+      component=".constructor.ConstructorSection"
+      name="redturtle.impoter.base.sections.constructor"
+      />
+
+  <utility
+      component=".contentsmapping.ContentsMappingSection"
+      name="redturtle.impoter.base.sections.contentsmapping"
+      />
+
+  <!-- <utility
+      component=".rer_collection_mapping.RERCollectionMapping"
+      name="redturtle.impoter.base.sections.rercollectionmapping"
+   />
+
+  <utility
+     component=".rer_custom_mapping.RERCustomMapping"
+     name="redturtle.impoter.base.sections.rercustommapping"
+   />
+
+  <utility
+    component=".rer_custom_constructor.RERCustomBeforeConstructor"
+    name="redturtle.impoter.base.sections.rercustombeforeconstructor"
+  />
+
+  <utility
+     component=".rer_custom_constructor.RERCustomAfterConstructor"
+     name="redturtle.impoter.base.sections.rercustomafterconstructor"
+   /> -->
+
+  <adapter factory=".converters.MasterSelectDeserializer" />
+
+  <transmogrifier:registerConfig
+    name="redturtle.plone5.main"
+    title="Migration configuration for querying the catalog of a Plone site"
+    configuration="redturtle_plone5.cfg"
+    />
+
+  <browser:page
+    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    name="redturtle_migration_main"
+    class=".migrations.RERPlone5MigrationMain"
+    permission="cmf.ManagePortal"
+    />
 
 </configure>

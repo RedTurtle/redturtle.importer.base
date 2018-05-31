@@ -17,24 +17,6 @@
 
   <include file="permissions.zcml" />
 
-  <genericsetup:registerProfile
-      name="default"
-      title="redturtle.importer.base"
-      directory="profiles/default"
-      description="Installs the redturtle.importer.base add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.post_install"
-      />
-
-  <genericsetup:registerProfile
-      name="uninstall"
-      title="redturtle.importer.base (uninstall)"
-      directory="profiles/uninstall"
-      description="Uninstalls the redturtle.importer.base add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.uninstall"
-      />
-
   <utility
       factory=".setuphandlers.HiddenProfiles"
       name="redturtle.importer.base-hiddenprofiles"

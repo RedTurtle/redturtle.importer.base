@@ -28,7 +28,6 @@ class MigrationResults(object):
 
     def __iter__(self):
         for item in self.previous:
-
             # metto le info dei file che arrivano in fondo alla pipe
             self.file_out.write('UID: {0}, portal_type: {1}, id: {2}\n'.format(
                 item['_uid'],

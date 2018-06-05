@@ -62,5 +62,12 @@ setup(
     entry_points="""
     [z3c.autoinclude.plugin]
     target = plone
+    [console_scripts]
+    migration = redturtle.importer.migration:migration
+    [redturtle.importer.commands]
+    username = redturtle.importer.commands:CmdUsername
+    password = redturtle.importer.commands:CmdPassword
+    migrate = redturtle.importer.commands:CmdPassword
+
     """,
 )

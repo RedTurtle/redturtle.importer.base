@@ -1,23 +1,43 @@
 # -*- coding: utf-8 -*-
+from AccessControl import Unauthorized
 from collective.transmogrifier.transmogrifier import Transmogrifier
 from plone import api
 from plone.app.uuid.utils import uuidToObject
 from plone.dexterity.utils import iterSchemata
-from plone.protect.interfaces import IDisableCSRFProtection
 from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
+from redturtle.importer.base.utils import get_additional_config
+from redturtle.importer.base.utils import get_base_config
 from transmogrify.dexterity.interfaces import IDeserializer
 from zope.event import notify
-from zope.interface import alsoProvides
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
 
+import errno
+import json
+import os
+
 
 class RedTurtlePlone5MigrationMain(BrowserView):
-
+    """
+    Migration view
+    """
     def __call__(self):
-        alsoProvides(self.request, IDisableCSRFProtection)
+        if not self.request.form.get('confirm', False):
+            return self.index()
 
+        return self.do_migrate()
+
+    def do_migrate(self, REQUEST=None):
+
+        authenticator = api.content.get_view(
+            context=api.portal.get(),
+            request=self.request,
+            name=u"authenticator")
+        if not authenticator.verify():
+            raise Unauthorized
+
+        self.cleanup_log_files()
         portal = api.portal.get()
         transmogrifier = Transmogrifier(portal)
         transmogrifier('redturtle.plone5.main')
@@ -42,4 +62,64 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         field.set(field.interface(obj), value)
                         notify(ObjectModifiedEvent(obj))
 
-        return 'DONE.'
+        api.portal.show_message(
+            message='Migration done. Check logs for a complete report.',
+            request=self.request
+        )
+        return self.request.response.redirect(
+            '{0}/migration-results'.format(api.portal.get().absolute_url())
+        )
+
+    def cleanup_log_files(self):
+        for type, section in [('in', 'catalogsource'), ('out', 'results')]:
+            additional_config = get_additional_config(section=section)
+            config = get_base_config(section=section)
+            config.update(additional_config)
+            file_name = config.get(
+                'file-name-{0}'.format(type),
+                'migration_content_{0}.json'.format(type))
+            file_path = '{0}/{1}'.format(
+                config.get('migration-dir'),
+                file_name)
+            try:
+                os.remove(file_path)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    # re-raise exception if a different error occurred
+                    raise
+
+    def get_config(self):
+        return get_additional_config(all=True)
+
+
+class MigrationResults(BrowserView):
+    """
+    read debug files and expose statistics
+    """
+    def get_results(self):
+        in_json = self.get_json_data(type='in', section='catalogsource')
+        out_json = self.get_json_data(type='out', section='results')
+
+        results = {
+            'in_count': len(in_json.keys()),
+            'out_count': len(out_json.keys()),
+        }
+
+        if out_json.keys() == in_json.keys():
+            results['same_results'] = True
+        else:
+            results['same_results'] = False
+            diff_keys = set(in_json.keys()) - set(out_json.keys())
+            results['not_migrated'] = [in_json[k] for k in diff_keys]
+        return results
+
+    def get_json_data(self, type, section):
+        additional_config = get_additional_config(section=section)
+        config = get_base_config(section=section)
+        config.update(additional_config)
+        file_name = config.get(
+            'file-name-{0}'.format(type),
+            'migration_content_{0}.json'.format(type))
+        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        with open(file_path, 'r') as fp:
+            return json.loads(fp.read())

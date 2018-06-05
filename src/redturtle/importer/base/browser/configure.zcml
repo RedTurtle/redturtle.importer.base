@@ -97,9 +97,16 @@
 
   <browser:page
     for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-    name="redturtle_migration_main"
+    name="data-migration"
     class=".migrations.RedTurtlePlone5MigrationMain"
+    template="templates/migration.pt"
     permission="cmf.ManagePortal"
     />
-
+  <browser:page
+    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    name="migration-results"
+    class=".migrations.MigrationResults"
+    template="templates/migration_result.pt"
+    permission="cmf.ManagePortal"
+    />
 </configure>

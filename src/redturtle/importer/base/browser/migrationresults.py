@@ -4,6 +4,7 @@ from collective.transmogrifier.interfaces import ISectionBlueprint
 from zope.interface import classProvides
 from zope.interface import implementer
 
+import json
 import os
 
 
@@ -13,27 +14,28 @@ class MigrationResults(object):
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
-
-        # folder dove mettere i file
-        self.migration_dir = options.get('migration-dir', '/tmp/migration')
-        if not os.path.exists(self.migration_dir):
-            os.makedirs(self.migration_dir)
-
-        # creo il file dove metto le info sugli elementi che arrivano
-        # in fondo alla pipe di migrazione
-        file_name = options.get(
-            'file-name-out', 'migration_content_out.txt')
-        self.file_out = open(self.migration_dir + '/' +
-                             file_name, 'w+')
+        self.debug_infos = {}
+        self.options = options
 
     def __iter__(self):
         for item in self.previous:
             # metto le info dei file che arrivano in fondo alla pipe
-            self.file_out.write('UID: {0}, portal_type: {1}, id: {2}\n'.format(
-                item['_uid'],
-                item['_type'],
-                item['id']
-            ))
+            self.debug_infos[item.get('_uid')] = {
+                'id': item.get('_id'),
+                'portal_type': item.get('_type'),
+                'title': item.get('title'),
+                'path': item.get('_path')
+            }
 
             yield item
-        self.file_out.close()
+        self.save_debug_out_file()
+
+    def save_debug_out_file(self):
+        migration_dir = self.options.get('migration-dir', '/tmp/migration')
+        if not os.path.exists(migration_dir):
+            os.makedirs(migration_dir)
+        file_name = self.options.get(
+            'file-name-out', 'migration_content_out.json')
+        file_path = '{0}/{1}'.format(migration_dir, file_name)
+        with open(file_path, 'w') as fp:
+            json.dump(self.debug_infos, fp)

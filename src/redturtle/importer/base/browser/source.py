@@ -4,6 +4,7 @@ from collective.transmogrifier.interfaces import ISectionBlueprint
 from datetime import datetime
 from plone import api
 from ploneorg.migration.browser.catalogsource import CatalogSourceSection
+from redturtle.importer.base.utils import get_additional_config
 from zope.interface import classProvides
 from zope.interface import implements
 
@@ -21,15 +22,10 @@ class CachedCatalogSourceSection(CatalogSourceSection):
     implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
-        # if os.environ.get('remote_user'):
-        #     options.update({'remote-username': os.environ.get('remote_user')})
-        # if os.environ.get('remote_password'):
-        #     options.update(
-        #         {'remote-password': os.environ.get('remote_password')})
-        # sito di prova
-        options.update({'remote-username': 'admin'})
-        options.update({'remote-password': 'admin'})
-
+        # read additional config in cfg file, and apply to default
+        additional_config = get_additional_config('catalogsource')
+        self.debug_infos = {}
+        options.update(additional_config)
         super(CachedCatalogSourceSection, self).__init__(
             transmogrifier, name, options, previous)
 
@@ -43,11 +39,6 @@ class CachedCatalogSourceSection(CatalogSourceSection):
             'cache-dir', '/tmp/migration/migration_cache')
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
-
-        # creo il file dove metto le info sugli elementi da migrare
-        file_name = self.get_option('file-name-in', 'migration_content_in.txt')
-        self.file_in = open(self.migration_dir + '/' +
-                            file_name, 'w+')
 
         self.incremental_migration = (
             options.get(
@@ -86,8 +77,14 @@ class CachedCatalogSourceSection(CatalogSourceSection):
 
                     # ptype = item.get('_type', False)
                     yield item
+        self.save_debug_in_file()
 
-        self.file_in.close()
+    def save_debug_in_file(self):
+        file_name = self.get_option(
+            'file-name-in', 'migration_content_in.json')
+        file_path = '{0}/{1}'.format(self.migration_dir, file_name)
+        with open(file_path, 'w') as fp:
+            json.dump(self.debug_infos, fp)
 
     def slugify(self, path):
         # TODO verificare che non ci siano collisioni
@@ -166,11 +163,11 @@ class CachedCatalogSourceSection(CatalogSourceSection):
         if item:
             json.dump(item, open(cachefile, 'wb'), indent=2)
 
-        # dovrebbe essere l'oggetto remote che ci siamo importati
-        self.file_in.write('UID: {0}, portal_type: {1}, id: {2}\n'.format(
-            item['_uid'],
-            item['_type'],
-            item['id']
-        ))
+        self.debug_infos[item.get('_uid')] = {
+            'id': item.get('_id'),
+            'portal_type': item.get('_type'),
+            'title': item.get('title'),
+            'path': item.get('_path')
+        }
 
         return item

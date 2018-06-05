@@ -22,10 +22,22 @@ class CachedCatalogSourceSection(CatalogSourceSection):
     implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
+<<<<<<< Updated upstream
         # read additional config in cfg file, and apply to default
         additional_config = get_additional_config('catalogsource')
         self.debug_infos = {}
         options.update(additional_config)
+=======
+        # if os.environ.get('remote_user'):
+        #     options.update({'remote-username': os.environ.get('remote_user')})
+        # if os.environ.get('remote_password'):
+        #     options.update(
+        #         {'remote-password': os.environ.get('remote_password')})
+        # sito di prova
+        options.update({'remote-username': 'admin'})
+        options.update({'remote-password': 'rerplone!'})
+
+>>>>>>> Stashed changes
         super(CachedCatalogSourceSection, self).__init__(
             transmogrifier, name, options, previous)
 

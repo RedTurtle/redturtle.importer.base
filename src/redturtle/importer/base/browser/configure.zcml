@@ -67,26 +67,6 @@
       name="redturtle.importer.base.migrationresults"
       />
 
-  <!-- <utility
-      component=".rer_collection_mapping.RERCollectionMapping"
-      name="redturtle.impoter.base.sections.rercollectionmapping"
-   />
-
-  <utility
-     component=".rer_custom_mapping.RERCustomMapping"
-     name="redturtle.impoter.base.sections.rercustommapping"
-   />
-
-  <utility
-    component=".rer_custom_constructor.RERCustomBeforeConstructor"
-    name="redturtle.impoter.base.sections.rercustombeforeconstructor"
-  />
-
-  <utility
-     component=".rer_custom_constructor.RERCustomAfterConstructor"
-     name="redturtle.impoter.base.sections.rercustomafterconstructor"
-   /> -->
-
   <adapter factory=".converters.MasterSelectDeserializer" />
 
   <transmogrifier:registerConfig

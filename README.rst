@@ -53,7 +53,7 @@ Usage
 
 Migration view
 --------------
-To start a migration, you only need to call `@@migrate-data` view on site root.
+To start a migration, you only need to call `@@data-migration` view on site root.
 In this view you can see which parameters are customized (via cfg file), and start the process.
 
 Customize steps parameters

@@ -22,6 +22,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     """
     Migration view
     """
+
     def __call__(self):
         if not self.request.form.get('confirm', False):
             return self.index()
@@ -96,6 +97,7 @@ class MigrationResults(BrowserView):
     """
     read debug files and expose statistics
     """
+
     def get_results(self):
         in_json = self.get_json_data(type='in', section='catalogsource')
         out_json = self.get_json_data(type='out', section='results')

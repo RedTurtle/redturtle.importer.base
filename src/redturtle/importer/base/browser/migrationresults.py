@@ -20,20 +20,12 @@ class MigrationResults(object):
     def __iter__(self):
         for item in self.previous:
             # metto le info dei file che arrivano in fondo alla pipe
-<<<<<<< Updated upstream
             self.debug_infos[item.get('_uid')] = {
-                'id': item.get('_id'),
-                'portal_type': item.get('_type'),
-                'title': item.get('title'),
-                'path': item.get('_path')
+                'id': item.get('_id', None),
+                'portal_type': item.get('_type', None),
+                'title': item.get('title', None),
+                'path': item.get('_path', None)
             }
-=======
-            self.file_out.write('UID: {0}, portal_type: {1}, id: {2}\n'.format(
-                item.get('_uid', None),
-                item.get('_type', None),
-                item.get('id', None)
-            ))
->>>>>>> Stashed changes
 
             yield item
         self.save_debug_out_file()

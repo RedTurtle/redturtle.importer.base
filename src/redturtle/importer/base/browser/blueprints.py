@@ -451,6 +451,7 @@ class Discussions(object):
             discussion = item.get('discussions', [])
             if not discussion:
                 yield item
+                continue
 
             id_map = {}
             conversation = IConversation(obj)
@@ -488,8 +489,10 @@ class Discussions(object):
 
                 conversation.addComment(new_comment)
 
-                new_comment.workflow_history.data.get('comment_review_workflow')[
-                    0]['review_state'] = comment['status']
+                comment_wf = new_comment.workflow_history.data.get('comment_review_workflow')
+                if comment_wf:
+                    new_comment.workflow_history.data.get('comment_review_workflow')[
+                        0]['review_state'] = comment['status']
 
                 id_map.update({comment.get('comment_id')
                               : int(new_comment.comment_id)})

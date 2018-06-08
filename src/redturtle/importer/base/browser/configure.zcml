@@ -48,6 +48,11 @@
       />
 
   <utility
+      component=".blueprints.CommitSection"
+      name="redturtle.importer.base.sections.commit"
+      />
+
+  <utility
       component=".schemaupdater.DexterityUpdateSection"
       name="redturtle.importer.base.schemaupdater"
       />

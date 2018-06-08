@@ -30,6 +30,8 @@ import base64
 import pkg_resources
 import pprint
 
+import transaction
+import logging
 
 try:
     pkg_resources.get_distribution('plone.app.multilingual')
@@ -844,4 +846,23 @@ class CioppinoTwoThumbsRatings(object):
                 annotations[yays] = item['_ratings']['ups']
                 annotations[nays] = item['_ratings']['downs']
 
+            yield item
+
+
+class CommitSection(object):
+    classProvides(ISectionBlueprint)
+    implements(ISection)
+
+    def __init__(self, transmogrifier, name, options, previous):
+        self.every = int(options.get('every', 1000))
+        self.previous = previous
+
+    def __iter__(self):
+        count = 0
+        for item in self.previous:
+            count = (count + 1) % self.every
+            if count == 0:
+                transaction.savepoint(optimistic=True)
+		logging.info('Committing changes!')
+                transaction.commit()				
             yield item

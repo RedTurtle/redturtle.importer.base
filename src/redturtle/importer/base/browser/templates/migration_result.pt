@@ -42,7 +42,6 @@
                 <td>${item/portal_type}</td>
                 <td>${item/title}</td>
                 <td>${item/path}</td>
-                <td>${item/is_private}</td>
               </tr>
             </tbody>
           </table>

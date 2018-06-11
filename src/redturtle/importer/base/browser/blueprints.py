@@ -491,13 +491,15 @@ class Discussions(object):
 
                 conversation.addComment(new_comment)
 
-                comment_wf = new_comment.workflow_history.data.get('comment_review_workflow')
+                comment_wf = new_comment.workflow_history.data.get(
+                    'comment_review_workflow')
                 if comment_wf:
                     new_comment.workflow_history.data.get('comment_review_workflow')[
                         0]['review_state'] = comment['status']
 
-                id_map.update({comment.get('comment_id')
-                              : int(new_comment.comment_id)})
+                id_map.update(
+                    {comment.get('comment_id'): int(new_comment.comment_id)}
+                )
 
                 print('Added comment with id {0} to item {1}'.format(
                     new_comment.comment_id, obj.absolute_url()))
@@ -863,6 +865,6 @@ class CommitSection(object):
             count = (count + 1) % self.every
             if count == 0:
                 transaction.savepoint(optimistic=True)
-		logging.info('Committing changes!')
-                transaction.commit()				
+                logging.info('Committing changes!')
+                transaction.commit()
             yield item

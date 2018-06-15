@@ -9,6 +9,7 @@ from redturtle.importer.base import logger
 from transmogrify.dexterity.interfaces import IDeserializer
 from z3c.form import interfaces
 from z3c.relationfield.interfaces import IRelationList
+from z3c.relationfield.interfaces import IRelationChoice
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 from zope.event import notify
@@ -76,9 +77,7 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
                         # setting value from the blueprint cue
                         value = item.get(name, _marker)
                         if value is not _marker:
-                            if IRelationList.providedBy(field):
-                                # BBB: non possiamo creare la relazione ora perche' il target
-                                # potrebbe non esistere ancora nel nuovo sito ...
+                            if IRelationList.providedBy(field) or IRelationChoice.providedBy(field):
                                 self.transmogrifier.fixrelations.append(
                                     ('/'.join(obj.getPhysicalPath()), name, value))
                             # Value was given in pipeline, so set it

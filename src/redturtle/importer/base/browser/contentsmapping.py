@@ -64,8 +64,6 @@ class ContentsMappingSection(object):
                 yield item
                 continue
 
-            #type_, path = item[typekey], item[pathkey]
-
             if item[typekey] == 'Topic':
                 item[typekey] = 'Collection'
                 yield item
@@ -75,10 +73,13 @@ class ContentsMappingSection(object):
                 self.collection_mapping(item)
                 yield item
 
-#                item['related_links'] = item['relatedLink']
-#                yield item
-            else:
-                # import pdb; pdb.set_trace()
+            elif item[typekey] == 'Link':
+                item['internal_link'] = item['internalLink']
+                item['remoteUrl'] = item['externalLink']
+
+                del item['internalLink']
+                del item['externalLink']
                 yield item
 
-            # yield item
+            else:
+                yield item

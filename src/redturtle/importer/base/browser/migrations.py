@@ -64,7 +64,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         notify(ObjectModifiedEvent(obj))
 
         api.portal.show_message(
-            message='Migration done. Check logs for a complete report.',
+            message='Migration done. Check logs for a complete report.'
+                    'Scripts after migration running....',
             request=self.request
         )
         return self.request.response.redirect(

@@ -5,8 +5,11 @@ from collective.transmogrifier.utils import defaultKeys
 from collective.transmogrifier.utils import defaultMatcher
 from collective.transmogrifier.utils import Matcher
 from redturtle.importer.base import logger
+from redturtle.importer.base.utils import get_additional_config
 from zope.interface import classProvides
 from zope.interface import implements
+
+import ast
 
 
 class ContentsMappingSection(object):
@@ -14,6 +17,11 @@ class ContentsMappingSection(object):
     implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
+        # read additional config in cfg file, and apply to default
+        additional_config = get_additional_config('contentsmapping')
+        self.debug_infos = {}
+        options.update(additional_config)
+
         self.transmogrifier = transmogrifier
         self.name = name
         self.options = options
@@ -28,6 +36,7 @@ class ContentsMappingSection(object):
 
         self.typekey = defaultMatcher(options, 'type-key', name, 'type',
                                       ('portal_type', 'Type'))
+        self.exclude_type = ast.literal_eval(options.get('exclude-type'))
 
     def collection_mapping(self, item):
         mapping = {
@@ -59,6 +68,19 @@ class ContentsMappingSection(object):
             typekey = self.typekey(*keys)[0]
             pathkey = self.pathkey(*keys)[0]
 
+            # integrazione check del tipo all'interno di questo ciclo
+            skip = False
+            for type in self.exclude_type:
+                for fathers_type in item['fathers_type_list']:
+                    if fathers_type == type:
+                        skip = True
+                        break
+                    if skip:
+                        break
+
+            if skip:
+                continue
+
             if not (typekey and pathkey):
                 logger.warn('Not enough info for item: %s' % item)
                 yield item
@@ -67,19 +89,27 @@ class ContentsMappingSection(object):
             if item[typekey] == 'Topic':
                 item[typekey] = 'Collection'
                 yield item
+                continue
 
             elif item[typekey] == 'Collection':
                 item[typekey] = 'Collection'
                 self.collection_mapping(item)
                 yield item
+                continue
 
             elif item[typekey] == 'Link':
-                item['internal_link'] = item['internalLink']
-                item['remoteUrl'] = item['externalLink']
+                internalLink = item.get('internalLink', None)
+                if internalLink:
+                    item['internal_link'] = internalLink
+                    del item['internalLink']
 
-                del item['internalLink']
-                del item['externalLink']
+                externalLink = item.get('externalLink', None)
+                if externalLink:
+                    item['remoteUrl'] = externalLink
+                    del item['externalLink']
+
                 yield item
+                continue
 
             else:
                 yield item

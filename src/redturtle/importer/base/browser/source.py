@@ -8,6 +8,7 @@ from redturtle.importer.base.utils import get_additional_config
 from zope.interface import classProvides
 from zope.interface import implements
 
+import ast
 import hashlib
 import json
 import logging

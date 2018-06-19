@@ -103,6 +103,9 @@ class ContentsMappingSection(object):
                 if internalLink:
                     item['internal_link'] = internalLink
                     del item['internalLink']
+                    remoteUrl = item.get('remoteUrl', None)
+                    if remoteUrl:
+                        del item['remoteUrl']
 
                 externalLink = item.get('externalLink', None)
                 if externalLink:

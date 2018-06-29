@@ -2,8 +2,7 @@
 from Acquisition import aq_base
 from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.sections.constructor import ConstructorSection \
-    as BaseConstructorSection
+from collective.transmogrifier.sections.constructor import ConstructorSection as BaseConstructorSection  # noqa
 from collective.transmogrifier.utils import traverse
 from redturtle.importer.base import logger
 from zope.interface import classProvides
@@ -36,17 +35,15 @@ class ConstructorSection(BaseConstructorSection):
             type_, path = item[typekey], item[pathkey]
 
             fti = self.ttool.getTypeInfo(type_)
-            # if fti is None:
-            #     logger.warn('Not an existing type: %s' % type_)
-            #     yield item
-            #     continue
             if fti is None:
                 logger.warn(
                     'Not an existing type, converted into Folder: {0}'.format(
                         type_
                     )
                 )
-                fti = self.ttool.getTypeInfo('Folder')
+                # manca il content type
+                # fti = self.ttool.getTypeInfo('Folder')
+                raise Exception('Missing {0} content type'.format(type_))
 
             path = path.encode('ASCII')
             container, id = posixpath.split(path.strip('/'))
@@ -72,12 +69,6 @@ class ConstructorSection(BaseConstructorSection):
                     )
                     del(context[id])
 
-                # if old.portal_type != type_:
-                    # REMOVE WRONG object
-                    # logger.info("[overwrite] remove object %s", old.absolute_url())
-                    # api.content.delete(obj=old)  # questo modo (in teoria migliore) lancia eccezioni sull'integrity, permessi, ...
-                    # del(context[id])
-
                 else:
                     yield item
                     continue
@@ -85,12 +76,7 @@ class ConstructorSection(BaseConstructorSection):
             try:
                 obj = fti._constructInstance(context, id)
             except (AttributeError, ValueError):
-                # Module rer.plone5.migration.browser.import.constructor, line 54, in __iter__
-                # Module Products.CMFCore.TypesTool, line 569, in _constructInstance
-                # AttributeError: _setObject
                 logger.exception('item:%s id:%s', item, id)
-                # error = 'Problemi for item %s' % (path)
-                # raise ValueError(error)
                 yield item
 
             # For CMF <= 2.1 (aka Plone 3)

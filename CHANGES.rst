@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a2 (unreleased)
+1.0a2 (2018-07-03)
 ------------------
 
 - Break migration if doesn't find a content types.

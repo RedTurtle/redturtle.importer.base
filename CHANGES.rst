@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a3 (unreleased)
+1.0a3 (2018-07-19)
 ------------------
 
 - added check for element's father data.

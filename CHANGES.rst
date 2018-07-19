@@ -5,7 +5,8 @@ Changelog
 1.0a3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- added check for element's father data.
+  [eikichi18]
 
 
 1.0a2 (2018-07-03)

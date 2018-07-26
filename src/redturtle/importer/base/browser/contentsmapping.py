@@ -72,6 +72,7 @@ class ContentsMappingSection(object):
             skip = False
             if self.exclude_type:
                 for type in self.exclude_type:
+                    # fathers type
                     if item.get('fathers_type_list', None):
                         for fathers_type in item['fathers_type_list']:
                             if fathers_type == type:
@@ -83,6 +84,10 @@ class ContentsMappingSection(object):
                         logger.warn('Item {0} doesn\'t have father'.format(
                             item['_path'])
                         )
+                    # check obj type
+                    if item.get('_type', None):
+                        if item['_type'] == type:
+                            skip = True
 
             if skip:
                 continue

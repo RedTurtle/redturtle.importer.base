@@ -99,11 +99,19 @@ class ContentsMappingSection(object):
 
             if item[typekey] == 'Topic':
                 item[typekey] = 'Collection'
+
+                if item.get('_layout', None):
+                    del item['_layout']
+
                 yield item
                 continue
 
             elif item[typekey] == 'Collection':
                 item[typekey] = 'Collection'
+
+                if item.get('_layout', None):
+                    del item['_layout']
+
                 self.collection_mapping(item)
                 yield item
                 continue

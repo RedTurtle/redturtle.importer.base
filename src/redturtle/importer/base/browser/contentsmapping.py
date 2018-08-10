@@ -36,7 +36,10 @@ class ContentsMappingSection(object):
 
         self.typekey = defaultMatcher(options, 'type-key', name, 'type',
                                       ('portal_type', 'Type'))
-        self.exclude_type = ast.literal_eval(options.get('exclude-type', None))
+
+        if options.get('exclude-type', None):
+            self.exclude_type = ast.literal_eval(
+                options.get('exclude-type', None))
 
     def collection_mapping(self, item):
         mapping = {
@@ -70,7 +73,7 @@ class ContentsMappingSection(object):
 
             # integrazione check del tipo all'interno di questo ciclo
             skip = False
-            if self.exclude_type:
+            if getattr(self, 'exclude_type', None):
                 for type in self.exclude_type:
                     # fathers type
                     if item.get('fathers_type_list', None):

@@ -11,6 +11,7 @@ from collective.transmogrifier.utils import Matcher
 from copy import deepcopy
 from DateTime import DateTime
 from dateutil.parser import parse
+from plone import api
 from plone.app.discussion.comment import CommentFactory
 from plone.app.discussion.interfaces import IConversation
 from plone.dexterity.interfaces import IDexterityContent
@@ -18,20 +19,19 @@ from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IUUID
 from ploneorg.migration.interfaces import IDeserializer
 from Products.Archetypes.interfaces import IBaseObject
-from Products.CMFCore.utils import getToolByName
 from redturtle.importer.base import logger
 from zope.annotation.interfaces import IAnnotations
 from zope.app.container.contained import notifyContainerModified
 from zope.interface import classProvides
-from zope.interface import implements
+from zope.interface import implementer
 from zope.schema import getFieldsInOrder
 
 import base64
+import logging
 import pkg_resources
 import pprint
-
 import transaction
-import logging
+
 
 try:
     pkg_resources.get_distribution('plone.app.multilingual')
@@ -52,9 +52,9 @@ else:
 VALIDATIONKEY = 'ploneorg.migration.logger'
 
 
+@implementer(ISection)
 class PrettyPrinter(object):
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -83,9 +83,9 @@ class PrettyPrinter(object):
             yield item
 
 
+@implementer(ISection)
 class DataFields(object):
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -127,7 +127,7 @@ class DataFields(object):
                     field = obj.getField(fieldname)
                     if field is None:
                         continue
-                    if item[key].has_key('data'):
+                    if 'data' in item[key]:
                         value = base64.b64decode(item[key]['data'])
                     else:
                         value = ''
@@ -153,11 +153,11 @@ class DataFields(object):
             yield item
 
 
+@implementer(ISection)
 class WorkflowHistory(object):
     """
     """
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -165,7 +165,7 @@ class WorkflowHistory(object):
         self.options = options
         self.previous = previous
         self.context = transmogrifier.context
-        self.wftool = getToolByName(self.context, 'portal_workflow')
+        self.wftool = api.portal.get_tool(name='portal_workflow')
 
         if 'path-key' in options:
             pathkeys = options['path-key'].splitlines()
@@ -223,20 +223,20 @@ class WorkflowHistory(object):
                 # for workflow in wf_hist_temp:
                 #     # Normalize workflow
                 #     if workflow == u'genweb_review':
-                #         for k, workflow2 in enumerate(item_tmp[workflowhistorykey]['genweb_review']):
-                #             if 'review_state' in item_tmp[workflowhistorykey]['genweb_review'][k]:
-                #                 if item_tmp[workflowhistorykey]['genweb_review'][k]['review_state'] == u'esborrany':
-                #                     item_tmp[workflowhistorykey]['genweb_review'][k]['review_state'] = u'visible'
+                #         for k, workflow2 in enumerate(item_tmp[workflowhistorykey]['genweb_review']):  # noqa
+                #             if 'review_state' in item_tmp[workflowhistorykey]['genweb_review'][k]:  # noqa
+                #                 if item_tmp[workflowhistorykey]['genweb_review'][k]['review_state'] == u'esborrany':  # noqa
+                #                     item_tmp[workflowhistorykey]['genweb_review'][k]['review_state'] = u'visible'  # noqa
                 #
-                #         item_tmp[workflowhistorykey]['genweb_simple'] = item_tmp[workflowhistorykey]['genweb_review']
+                #         item_tmp[workflowhistorykey]['genweb_simple'] = item_tmp[workflowhistorykey]['genweb_review']  # noqa
                 #         del item_tmp[workflowhistorykey]['genweb_review']
 
                 # get back datetime stamp and set the workflow history
                 for workflow in item_tmp[workflowhistorykey]:
-                    for k, workflow2 in enumerate(item_tmp[workflowhistorykey][workflow]):
+                    for k, workflow2 in enumerate(item_tmp[workflowhistorykey][workflow]):  # noqa
                         if 'time' in item_tmp[workflowhistorykey][workflow][k]:
-                            item_tmp[workflowhistorykey][workflow][k]['time'] = DateTime(
-                                item_tmp[workflowhistorykey][workflow][k]['time'])
+                            item_tmp[workflowhistorykey][workflow][k]['time'] = DateTime(  # noqa
+                                item_tmp[workflowhistorykey][workflow][k]['time'])  # noqa
 
                 obj.workflow_history.data = item_tmp[workflowhistorykey]
 
@@ -248,11 +248,11 @@ class WorkflowHistory(object):
             yield item
 
 
+@implementer(ISection)
 class LocalRoles(object):
     """ """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -296,15 +296,18 @@ class LocalRoles(object):
                             obj.reindexObjectSecurity()
                         except Exception:
                             logger.error(
-                                'Failed to reindexObjectSecurity {0}'.format(item['_path']))
+                                'Failed to reindexObjectSecurity {0}'.format(
+                                    item['_path']
+                                )
+                            )
             yield item
 
 
+@implementer(ISection)
 class LeftOvers(object):
     """ """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -329,7 +332,7 @@ class LeftOvers(object):
     def __iter__(self):
         for item in self.previous:
             pathkey = self.pathkey(*item.keys())[0]
-            propertieskey = self.propertieskey(*item.keys())[0]
+            propertieskey = self.propertieskey(*item.keys())[0]  # noqa
 
             if not pathkey:
                 # not enough info
@@ -382,7 +385,7 @@ class LeftOvers(object):
                     if item['_atrefs'].get('Collage_aliasedItem', False):
                         try:
                             ref_path = item['language'] + \
-                                item['_atrefs']['Collage_aliasedItem'][0][item['_site_path_length']:]
+                                item['_atrefs']['Collage_aliasedItem'][0][item['_site_path_length']:]  # noqa
                             ref_obj = self.context.unrestrictedTraverse(
                                 str(ref_path))
                             ref_uuid = IUUID(ref_obj)
@@ -411,11 +414,11 @@ class LeftOvers(object):
             yield item
 
 
+@implementer(ISection)
 class Discussions(object):
     """A blueprint for importing comments into plone
     """
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -458,14 +461,15 @@ class Discussions(object):
             id_map = {}
             conversation = IConversation(obj)
 
-            # remove all comments to avoid duplication when override is disabled
+            # remove all comments to avoid duplication when override is disabled  # noqa
             if conversation.items():
                 comments_id = [x[0] for x in conversation.items()]
                 for value in comments_id:
                     try:
                         del conversation[value]
                     except Exception:
-                        print 'WARNING: Discussion with id {0} not found'.format(value)
+                        print 'WARNING: Discussion with id {0} not found'.format(  # noqa
+                            value)
                         pass
 
             for comment in discussion:
@@ -494,7 +498,7 @@ class Discussions(object):
                 comment_wf = new_comment.workflow_history.data.get(
                     'comment_review_workflow')
                 if comment_wf:
-                    new_comment.workflow_history.data.get('comment_review_workflow')[
+                    new_comment.workflow_history.data.get('comment_review_workflow')[  # noqa
                         0]['review_state'] = comment['status']
 
                 id_map.update(
@@ -506,13 +510,13 @@ class Discussions(object):
             yield item
 
 
+@implementer(ISection)
 class FieldsCorrector(object):
     """ This corrects the differences (mainly in naming) of the incoming fields
         with the expected ones.
     """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -568,6 +572,7 @@ class FieldsCorrector(object):
             yield item
 
 
+@implementer(ISection)
 class PAMLinker(object):
     """ Links provided translations using plone.app.multilingual. It assumes
         that the object to be linked objects are already in place, so this
@@ -575,7 +580,6 @@ class PAMLinker(object):
     """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -612,8 +616,8 @@ class PAMLinker(object):
                     lang_info = []
                     for lang in item['_translations']:
                         target_obj = self.context.unrestrictedTraverse(
-                            str('{0}{1}'.format(lang, item['_translations'][lang])).lstrip('/'), None)
-                        if target_obj and (IBaseObject.providedBy(target_obj) or IDexterityContent.providedBy(target_obj)):
+                            str('{0}{1}'.format(lang, item['_translations'][lang])).lstrip('/'), None)  # noqa
+                        if target_obj and (IBaseObject.providedBy(target_obj) or IDexterityContent.providedBy(target_obj)):  # noqa
                             lang_info.append((target_obj, lang),)
                     try:
                         self.link_translations(lang_info)
@@ -636,9 +640,9 @@ class PAMLinker(object):
                 canonical.register_translation(language, obj)
 
 
+@implementer(ISection)
 class OrderSection(object):
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.every = int(options.get('every', 1000))
@@ -689,11 +693,11 @@ class OrderSection(object):
 
             parent_base = aq_base(parent)
 
-            if hasattr(parent_base, 'getOrdering'):
+            if getattr(parent_base, 'getOrdering', None):
                 ordering = parent.getOrdering()
                 # Only DefaultOrdering of p.folder is supported
-                if (not hasattr(ordering, '_order')
-                        and not hasattr(ordering, '_pos')):
+                if (not getattr(ordering, '_order', None)
+                        and not getattr(ordering, '_pos', None)):
                     continue
                 order = ordering._order()
                 pos = ordering._pos()
@@ -705,6 +709,7 @@ class OrderSection(object):
                 notifyContainerModified(parent)
 
 
+@implementer(ISection)
 class PathManipulator(object):
 
     """ This allows to modify the path parts given a template in the template
@@ -728,7 +733,6 @@ class PathManipulator(object):
     """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         # self.key = Expression(options['key'], transmogrifier, name, options)
@@ -757,7 +761,7 @@ class PathManipulator(object):
                 if len(original_path) != len(template) and \
                    ('*' not in template or '**' not in template):
                     logger.error(
-                        'The template and the length of the path is not the same nad there is no wildcards on it')
+                        'The template and the length of the path is not the same nad there is no wildcards on it')  # noqa
                     yield item
 
                 # One to one substitution, no wildcards
@@ -773,8 +777,8 @@ class PathManipulator(object):
                         elif operator == '':
                             pass
 
-                # We only attend to the number of partial paths before and after
-                # the wildcard
+                # We only attend to the number of partial paths before and
+                # after the wildcard
                 if u'*' in template or u'**' in template:
                     index = template.index(u'*')
                     # Process the head of the path (until wildcard)
@@ -820,13 +824,13 @@ class PathManipulator(object):
             yield item
 
 
+@implementer(ISection)
 class CioppinoTwoThumbsRatings(object):
 
     """ Migrate ratings from cioppino.twothumbs
     """
 
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -851,9 +855,9 @@ class CioppinoTwoThumbsRatings(object):
             yield item
 
 
+@implementer(ISection)
 class CommitSection(object):
     classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.every = int(options.get('every', 1000))

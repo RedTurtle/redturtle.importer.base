@@ -40,7 +40,7 @@ class TestUninstall(unittest.TestCase):
     def setUp(self):
         self.portal = self.layer['portal']
         self.installer = api.portal.get_tool('portal_quickinstaller')
-        roles_before = api.user.get(userid=TEST_USER_ID).getRoles()
+        roles_before = api.user.get(userid=TEST_USER_ID).getRoles()  # noqa
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
         self.installer.uninstallProducts(['redturtle.importer.base'])
         setRoles(self.portal, TEST_USER_ID, roles_before)
@@ -56,5 +56,5 @@ class TestUninstall(unittest.TestCase):
             IRedturtleImporterBaseLayer
         from plone.browserlayer import utils
         self.assertNotIn(
-           IRedturtleImporterBaseLayer,
-           utils.registered_layers())
+            IRedturtleImporterBaseLayer,
+            utils.registered_layers())

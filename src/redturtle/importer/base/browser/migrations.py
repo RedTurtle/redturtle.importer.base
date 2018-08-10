@@ -34,7 +34,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         authenticator = api.content.get_view(
             context=api.portal.get(),
             request=self.request,
-            name=u"authenticator")
+            name=u'authenticator')
         if not authenticator.verify():
             raise Unauthorized
 
@@ -45,8 +45,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
         # nel transmogrifier c'e' una lista di tuple:
         # (path, fieldname, value) per le quali vanno rifatte le relations
-        for (path, fieldname, value) in getattr(transmogrifier, "fixrelations", []):  # noqa
-            logger.info('fix %s %s %s', path, fieldname, value)
+        for (path, fieldname, value) in getattr(transmogrifier, 'fixrelations', []):  # noqa
+            logger.info('fix {0} {1} {2}'.format(path, fieldname, value))
             obj = self.context.unrestrictedTraverse(path)
             for schemata in iterSchemata(obj):
                 for name, field in getFieldsInOrder(schemata):

@@ -5,11 +5,10 @@ from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IMutableUUID
 from ploneorg.migration.browser.schemaupdater import DexterityUpdateSection as BaseDexterityUpdateSection  # noqa
-from redturtle.importer.base import logger
 from transmogrify.dexterity.interfaces import IDeserializer
 from z3c.form import interfaces
-from z3c.relationfield.interfaces import IRelationList
 from z3c.relationfield.interfaces import IRelationChoice
+from z3c.relationfield.interfaces import IRelationList
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 from zope.event import notify
@@ -77,9 +76,9 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
                         # setting value from the blueprint cue
                         value = item.get(name, _marker)
                         if value is not _marker:
-                            if IRelationList.providedBy(field) or IRelationChoice.providedBy(field):
+                            if IRelationList.providedBy(field) or IRelationChoice.providedBy(field):  # noqa
                                 self.transmogrifier.fixrelations.append(
-                                    ('/'.join(obj.getPhysicalPath()), name, value))
+                                    ('/'.join(obj.getPhysicalPath()), name, value))  # noqa
                             # Value was given in pipeline, so set it
                             deserializer = IDeserializer(field)
                             try:
@@ -97,8 +96,8 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
                             except Exception:
                                 continue
 
-                        # Get the widget's current value, if it has one then leave
-                        # it alone
+                        # Get the widget's current value, if it has one then
+                        # leave it alone
                         value = getMultiAdapter(
                             (obj, field),
                             interfaces.IDataManager).query()

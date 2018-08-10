@@ -52,17 +52,21 @@ class ContentsMappingSection(object):
             # Fix query string opertaion
             proper_operation = mapping.get(criteria.get('i'))
             if proper_operation:
-                logger.info('Changed collection criteria for %s from %s to %s for item: %s' % (
-                    criteria.get('i'), criteria.get('o'), proper_operation, item['_path']))
+                logger.info('Changed collection criteria for {0} from {1} to {2} for item: {3}'.format(  # noqa
+                    criteria.get('i'),
+                    criteria.get('o'),
+                    proper_operation,
+                    item['_path'])
+                )
                 criteria.update({'o': proper_operation})
             # Fix path format if a uid is specified
             if 'path' in criteria.values():
                 path_value = criteria.get('v')
-                if not '::' in path_value:
+                if '::' not in path_value:
                     continue
-                uid, number = path_value.split("::")
+                uid, number = path_value.split('::')
                 if uid:
-                    fixed_uid = '%s::-%s' % (uid, number)
+                    fixed_uid = '{0}::-{1}'.format(uid, number)
                     criteria.update({'v': fixed_uid})
 
     def __iter__(self):
@@ -96,7 +100,7 @@ class ContentsMappingSection(object):
                 continue
 
             if not (typekey and pathkey):
-                logger.warn('Not enough info for item: %s' % item)
+                logger.warn('Not enough info for item: {0}'.format(item))
                 yield item
                 continue
 

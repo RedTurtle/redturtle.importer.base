@@ -5,13 +5,14 @@ Changelog
 1.0a4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Handle cases where exlude-type is not set.
+  [cekk]
 
 
 1.0a3 (2018-07-19)
 ------------------
 
-- added check for element's father data.
+- Added check for element's father data.
   [eikichi18]
 
 

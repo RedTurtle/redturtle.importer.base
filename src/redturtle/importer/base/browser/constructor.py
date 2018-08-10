@@ -80,7 +80,7 @@ class ConstructorSection(BaseConstructorSection):
                 yield item
 
             # For CMF <= 2.1 (aka Plone 3)
-            if hasattr(fti, '_finishConstruction'):
+            if getattr(fti, '_finishConstruction', None):
                 obj = fti._finishConstruction(obj)
 
             if obj.getId() != id:

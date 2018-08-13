@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
+from Acquisition import aq_base
 from collective.transmogrifier.transmogrifier import Transmogrifier
+from lxml import etree
 from plone import api
+from plone.app.textfield import RichText
 from plone.app.uuid.utils import uuidToObject
 from plone.dexterity.utils import iterSchemata
+from plone.outputfilters.filters.resolveuid_and_caption import resolveuid_re
 from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
 from redturtle.importer.base.utils import get_additional_config
@@ -63,6 +67,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         field.set(field.interface(obj), value)
                         notify(ObjectModifiedEvent(obj))
 
+        # run scripts after migration
+        self.scripts_post_migration()
+        logger.info('Migration done.')
         api.portal.show_message(
             message='Migration done. Check logs for a complete report.'
                     'Scripts after migration running....',
@@ -71,6 +78,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         return self.request.response.redirect(
             '{0}/migration-results'.format(api.portal.get().absolute_url())
         )
+
+    def scripts_post_migration(self):
+        self.generate_broken_links_list()
 
     def cleanup_log_files(self):
         for type, section in [('in', 'catalogsource'), ('out', 'results')]:
@@ -93,6 +103,48 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     def get_config(self):
         return get_additional_config(all=True)
 
+    def generate_broken_links_list(self):
+        logger.info('Generating broken tinymce internal links.')
+        pc = api.portal.get_tool(name='portal_catalog')
+        brains = pc()
+        broken_urls = []
+
+        for brain in brains:
+            if brain.portal_type == 'Discussion Item':
+                continue
+            item = aq_base(brain.getObject())
+            for schemata in iterSchemata(item):
+                for name, field in getFieldsInOrder(schemata):
+                    if not isinstance(field, RichText):
+                        continue
+                    item_field = getattr(item, name, None)
+                    if not item_field:
+                        continue
+                    raw_text = item_field.raw
+                    if not raw_text:
+                        continue
+                    xml = etree.HTML(raw_text)
+                    for link in xml.xpath('//a'):
+                        match = resolveuid_re.match(link.get('href'))
+                        if not match:
+                            continue
+                        uid, _subpath = match.groups()
+                        obj = api.content.get(UID=uid)
+                        if not obj:
+                            url = brain.getURL()
+                            if url not in broken_urls:
+                                broken_urls.append(url)
+        self.write_broken_links(broken_urls)
+
+    def write_broken_links(self, paths):
+        additional_config = get_additional_config(section='results')
+        config = get_base_config(section='results')
+        config.update(additional_config)
+        file_name = config.get('broken-links-tiny')
+        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        with open(file_path, 'w') as fp:
+            json.dump(paths, fp)
+
 
 class MigrationResults(BrowserView):
     """
@@ -106,6 +158,7 @@ class MigrationResults(BrowserView):
         results = {
             'in_count': len(in_json.keys()),
             'out_count': len(out_json.keys()),
+            'broken_links': self.get_broken_links()
         }
 
         if out_json.keys() == in_json.keys():
@@ -114,6 +167,7 @@ class MigrationResults(BrowserView):
             results['same_results'] = False
             diff_keys = set(in_json.keys()) - set(out_json.keys())
             results['not_migrated'] = [in_json[k] for k in diff_keys]
+
         return results
 
     def get_json_data(self, type, section):
@@ -123,6 +177,15 @@ class MigrationResults(BrowserView):
         file_name = config.get(
             'file-name-{0}'.format(type),
             'migration_content_{0}.json'.format(type))
+        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        with open(file_path, 'r') as fp:
+            return json.loads(fp.read())
+
+    def get_broken_links(self):
+        additional_config = get_additional_config(section='results')
+        config = get_base_config(section='results')
+        config.update(additional_config)
+        file_name = config.get('broken-links-tiny')
         file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
         with open(file_path, 'r') as fp:
             return json.loads(fp.read())

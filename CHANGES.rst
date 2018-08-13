@@ -7,7 +7,9 @@ Changelog
 
 - Handle cases where exlude-type is not set.
   [cekk]
-
+- Generate a list of broken links in tinymce after migration,
+  and expose them in final report view.
+  [cekk]
 
 1.0a3 (2018-07-19)
 ------------------

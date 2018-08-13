@@ -15,37 +15,51 @@
     <metal:content-core fill-slot="content-core">
       <metal:content-core define-macro="content-core"
         tal:define="results view/get_results">
-
-        <h2>Contents migrated</h2>
-        <table class="listing" summary="Results">
-          <tbody>
-            <tr>
-                <th>In</th>
-                <th>Out</th>
-            </tr>
-            <tr>
-                <td>${results/in_count}</td>
-                <td>${results/out_count}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="errors" tal:condition="not:results/same_results">
-          <h2>Contents not migrated</h2>
-          <table class="listing" summary="Results">
-            <tbody>
-              <tr>
-                <th>portal_type</th>
-                <th>title</th>
-                <th>path</th>
-              </tr>
-              <tr tal:repeat="item results/not_migrated">
-                <td>${item/portal_type}</td>
-                <td>${item/title}</td>
-                <td>${item/path}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="pat-autotoc autotabs"
+          data-pat-autotoc="levels:h2;">
+          <section>
+            <h2>Results</h2>
+            <h3>Contents migrated</h3>
+            <table class="listing" summary="Results">
+              <tbody>
+                <tr>
+                    <th>In</th>
+                    <th>Out</th>
+                </tr>
+                <tr>
+                    <td>${results/in_count}</td>
+                    <td>${results/out_count}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="errors" tal:condition="not:results/same_results">
+              <h3>Contents not migrated</h3>
+              <table class="listing" summary="Results">
+                <tbody>
+                  <tr>
+                    <th>portal_type</th>
+                    <th>title</th>
+                    <th>path</th>
+                  </tr>
+                  <tr tal:repeat="item results/not_migrated">
+                    <td>${item/portal_type}</td>
+                    <td>${item/title}</td>
+                    <td>${item/path}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section tal:define="broken_links results/broken_links">
+            <h2>Broken links</h2>
+            <p class="discreet">List of contents with some broken internal links in tinymce fields.</p>
+            <p tal:condition="not:broken_links">No broken links found.</p>
+            <ul tal:condition="broken_links">
+              <li tal:repeat="link broken_links"><a href="link">${link}</a></li>
+            </ul>
+          </section>
         </div>
+        
       </metal:content-core>
     </metal:content-core>
   </body>

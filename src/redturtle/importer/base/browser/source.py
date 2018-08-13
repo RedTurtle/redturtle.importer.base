@@ -26,7 +26,6 @@ class CachedCatalogSourceSection(CatalogSourceSection):
         additional_config = get_additional_config('catalogsource')
         self.debug_infos = {}
         options.update(additional_config)
-
         super(CachedCatalogSourceSection, self).__init__(
             transmogrifier, name, options, previous)
 

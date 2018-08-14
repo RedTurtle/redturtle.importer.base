@@ -26,7 +26,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     """
     Migration view
     """
-
+    transmogrifier_conf = 'redturtle.plone5.main'
+    
     def __call__(self):
         if not self.request.form.get('confirm', False):
             return self.index()
@@ -45,7 +46,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.cleanup_log_files()
         portal = api.portal.get()
         transmogrifier = Transmogrifier(portal)
-        transmogrifier('redturtle.plone5.main')
+        transmogrifier(self.transmogrifier_conf)
 
         # nel transmogrifier c'e' una lista di tuple:
         # (path, fieldname, value) per le quali vanno rifatte le relations

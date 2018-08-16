@@ -82,7 +82,10 @@ class CachedCatalogSourceSection(CatalogSourceSection):
     def save_debug_in_file(self):
         file_name = self.get_option(
             'file-name-in', 'migration_content_in.json')
-        file_path = '{0}/{1}'.format(self.migration_dir, file_name)
+        file_path = '{0}/{1}_{2}'.format(
+            self.migration_dir,
+            api.portal.get().getId(),
+            file_name)
         with open(file_path, 'w') as fp:
             json.dump(self.debug_infos, fp)
 

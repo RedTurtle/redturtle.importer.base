@@ -27,7 +27,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     Migration view
     """
     transmogrifier_conf = 'redturtle.plone5.main'
-    
+
     def __call__(self):
         if not self.request.form.get('confirm', False):
             return self.index()
@@ -91,8 +91,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             file_name = config.get(
                 'file-name-{0}'.format(type),
                 'migration_content_{0}.json'.format(type))
-            file_path = '{0}/{1}'.format(
+            file_path = '{0}/{1}_{2}'.format(
                 config.get('migration-dir'),
+                api.portal.get().getId(),
                 file_name)
             try:
                 os.remove(file_path)
@@ -126,7 +127,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         continue
                     xml = etree.HTML(raw_text)
                     for link in xml.xpath('//a'):
-                        match = resolveuid_re.match(link.get('href'))
+                        match = resolveuid_re.match(link.get('href', ''))
                         if not match:
                             continue
                         uid, _subpath = match.groups()
@@ -142,7 +143,10 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         config = get_base_config(section='results')
         config.update(additional_config)
         file_name = config.get('broken-links-tiny')
-        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        file_path = '{0}/{1}_{2}'.format(
+            config.get('migration-dir'),
+            api.portal.get().getId(),
+            file_name)
         with open(file_path, 'w') as fp:
             json.dump(paths, fp)
 
@@ -178,7 +182,10 @@ class MigrationResults(BrowserView):
         file_name = config.get(
             'file-name-{0}'.format(type),
             'migration_content_{0}.json'.format(type))
-        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        file_path = '{0}/{1}_{2}'.format(
+            config.get('migration-dir'),
+            api.portal.get().getId(),
+            file_name)
         with open(file_path, 'r') as fp:
             return json.loads(fp.read())
 
@@ -187,6 +194,9 @@ class MigrationResults(BrowserView):
         config = get_base_config(section='results')
         config.update(additional_config)
         file_name = config.get('broken-links-tiny')
-        file_path = '{0}/{1}'.format(config.get('migration-dir'), file_name)
+        file_path = '{0}/{1}_{2}'.format(
+            config.get('migration-dir'),
+            api.portal.get().getId(),
+            file_name)
         with open(file_path, 'r') as fp:
             return json.loads(fp.read())

@@ -55,7 +55,7 @@
             <p class="discreet">List of contents with some broken internal links in tinymce fields.</p>
             <p tal:condition="not:broken_links">No broken links found.</p>
             <ul tal:condition="broken_links">
-              <li tal:repeat="link broken_links"><a href="link">${link}</a></li>
+              <li tal:repeat="link broken_links"><a href="${link}">${link}</a></li>
             </ul>
           </section>
         </div>

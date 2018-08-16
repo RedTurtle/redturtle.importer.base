@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
+from plone import api
 from zope.interface import classProvides
 from zope.interface import implementer
 
@@ -36,6 +37,9 @@ class MigrationResults(object):
             os.makedirs(migration_dir)
         file_name = self.options.get(
             'file-name-out', 'migration_content_out.json')
-        file_path = '{0}/{1}'.format(migration_dir, file_name)
+        file_path = '{0}/{1}_{2}'.format(
+            migration_dir,
+            api.portal.get().getId(),
+            file_name)
         with open(file_path, 'w') as fp:
             json.dump(self.debug_infos, fp)

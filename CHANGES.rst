@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a4 (unreleased)
+1.0a4 (2018-09-03)
 ------------------
 
 - Handle cases where exlude-type is not set.

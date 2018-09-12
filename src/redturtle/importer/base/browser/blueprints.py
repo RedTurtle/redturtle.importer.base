@@ -20,6 +20,7 @@ from plone.uuid.interfaces import IUUID
 from ploneorg.migration.interfaces import IDeserializer
 from Products.Archetypes.interfaces import IBaseObject
 from redturtle.importer.base import logger
+from redturtle.importer.base.interfaces import IMigrationContextSteps
 from zope.annotation.interfaces import IAnnotations
 from zope.app.container.contained import notifyContainerModified
 from zope.interface import classProvides
@@ -871,4 +872,33 @@ class CommitSection(object):
                 transaction.savepoint(optimistic=True)
                 logging.info('Committing changes!')
                 transaction.commit()
+            yield item
+
+
+@implementer(ISection)
+class ContextFixes(object):
+    """
+    Do specific-context steps
+    """
+    classProvides(ISectionBlueprint)
+
+    def __init__(self, transmogrifier, name, options, previous):
+        self.previous = previous
+        self.context = transmogrifier.context
+
+    def __iter__(self):
+        for item in self.previous:
+            obj = self.context.unrestrictedTraverse(
+                str(item['_path']).lstrip('/'), None)
+            # path doesn't exist
+            if obj is None:
+                yield item
+                continue
+            try:
+                provider = IMigrationContextSteps(obj)
+                provider.doSteps()
+            except TypeError:
+                # adapter not provided
+                yield item
+                continue
             yield item

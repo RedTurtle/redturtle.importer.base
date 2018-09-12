@@ -5,7 +5,8 @@ Changelog
 1.0a5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add support for specific context steps with adapters.
+  [cekk]
 
 
 1.0a4 (2018-09-03)

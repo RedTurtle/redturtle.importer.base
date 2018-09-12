@@ -46,6 +46,11 @@
       component=".blueprints.Discussions"
       name="redturtle.importer.base.discussions"
       />
+  
+  <utility
+      component=".blueprints.ContextFixes"
+      name="redturtle.importer.base.context_fixes"
+      />
 
   <utility
       component=".blueprints.CommitSection"

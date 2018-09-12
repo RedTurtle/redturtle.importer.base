@@ -89,6 +89,38 @@ In `.migrationconfig.cfg` file, under `[catalogsource]` section, you also need t
     remote-password = password
     ...
 
+
+Custom steps for specific portal types
+--------------------------------------
+
+If you are migrating a content-type that needs some manual fixes after the creation, you can do it with an adapter.
+
+You only need to register an adapter for your content-type like this::
+
+    <adapter
+      for="my.product.interfaces.IMyInterface"
+      provides="redturtle.importer.base.interfaces.IMigrationContextSteps"
+      factory=".steps.MyTypeSteps"
+    />
+
+
+And then you need to provide a "doSteps" method in the class::
+
+    from redturtle.importer.base.interfaces import IMigrationContextSteps
+    from zope.interface import implementer
+    
+    @implementer(IMigrationContextSteps)
+    class MyTypeSteps(object):
+
+        def __init__(self, context):
+            self.context = context
+
+        def doSteps(self):
+            """
+            do something here
+            """
+
+
 Custom steps and mappings
 -------------------------
 

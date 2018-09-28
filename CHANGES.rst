@@ -5,6 +5,7 @@ Changelog
 1.0a5 (unreleased)
 ------------------
 
+- Add check if Plone Site element was indexed.
 - Add support for specific context steps with adapters.
   [cekk]
 

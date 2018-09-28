@@ -34,6 +34,10 @@ class ConstructorSection(BaseConstructorSection):
                 continue
             type_, path = item[typekey], item[pathkey]
 
+            # in generale se ce questa cosa qua non va bene
+            if type_ in ('Plone Site', ):
+                continue
+
             fti = self.ttool.getTypeInfo(type_)
             if fti is None:
                 logger.warn(

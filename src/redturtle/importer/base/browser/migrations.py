@@ -131,7 +131,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         if not match:
                             continue
                         uid, _subpath = match.groups()
-                        obj = api.content.get(UID=uid)
+                        obj = api.content.get(UID=uid[:32])
                         if not obj:
                             url = brain.getURL()
                             if url not in broken_urls:

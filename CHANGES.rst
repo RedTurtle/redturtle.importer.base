@@ -5,7 +5,8 @@ Changelog
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix uudi matcher after migration.
+  [eikichi18]
 
 
 1.0.0 (2018-10-04)

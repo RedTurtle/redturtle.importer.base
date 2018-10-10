@@ -124,13 +124,13 @@ class ContentsMappingSection(object):
                 continue
 
             elif item[typekey] == 'Link':
+                # non ci possono essere entrambi i link settati
+
                 internalLink = item.get('internalLink', None)
                 if internalLink:
                     item['internal_link'] = internalLink
                     del item['internalLink']
-                    # remoteUrl = item.get('remoteUrl', None)
-                    # if remoteUrl:
-                    #     del item['remoteUrl']
+                    del item['remoteUrl']
 
                 externalLink = item.get('externalLink', None)
                 if externalLink:

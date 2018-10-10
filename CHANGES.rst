@@ -5,7 +5,8 @@ Changelog
 1.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed mapping for link internal/external link.
+  [eikichi18]
 
 
 1.0.1 (2018-10-09)

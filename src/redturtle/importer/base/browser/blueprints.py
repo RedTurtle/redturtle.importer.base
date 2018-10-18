@@ -896,7 +896,7 @@ class ContextFixes(object):
                 continue
             try:
                 provider = IMigrationContextSteps(obj)
-                provider.doSteps()
+                provider.doSteps(item)
             except TypeError:
                 # adapter not provided
                 yield item

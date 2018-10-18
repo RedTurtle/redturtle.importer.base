@@ -5,7 +5,8 @@ Changelog
 1.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added json item to adapters methods.
+  [daniele]
 
 
 1.0.2 (2018-10-11)

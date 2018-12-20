@@ -26,10 +26,12 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     """
     Migration view
     """
-    transmogrifier_conf = 'redturtle.plone5.main'
+
+    transmogrifier_conf = "redturtle.plone5.main"
+    skip_types_in_link_check = ["Discussion Item"]
 
     def __call__(self):
-        if not self.request.form.get('confirm', False):
+        if not self.request.form.get("confirm", False):
             return self.index()
 
         return self.do_migrate()
@@ -39,7 +41,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         authenticator = api.content.get_view(
             context=api.portal.get(),
             request=self.request,
-            name=u'authenticator')
+            name=u"authenticator",
+        )
         if not authenticator.verify():
             raise Unauthorized
 
@@ -50,8 +53,10 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
         # nel transmogrifier c'e' una lista di tuple:
         # (path, fieldname, value) per le quali vanno rifatte le relations
-        for (path, fieldname, value) in getattr(transmogrifier, 'fixrelations', []):  # noqa
-            logger.info('fix {0} {1} {2}'.format(path, fieldname, value))
+        for (path, fieldname, value) in getattr(
+            transmogrifier, "fixrelations", []
+        ):  # noqa
+            logger.info("fix {0} {1} {2}".format(path, fieldname, value))
             obj = self.context.unrestrictedTraverse(path)
             for schemata in iterSchemata(obj):
                 for name, field in getFieldsInOrder(schemata):
@@ -61,8 +66,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         else:
                             value = [uuidToObject(uuid) for uuid in value]
                         deserializer = IDeserializer(field)
-                        value = deserializer(
-                            value, [], {}, True, logger=logger)
+                        value = deserializer(value, [], {}, True, logger=logger)
                         # self.disable_constraints,
                         # logger=self.log,
                         field.set(field.interface(obj), value)
@@ -70,31 +74,31 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
         # run scripts after migration
         self.scripts_post_migration()
-        logger.info('Migration done.')
+        logger.info("Migration done.")
         api.portal.show_message(
-            message='Migration done. Check logs for a complete report.'
-                    'Scripts after migration running....',
-            request=self.request
+            message="Migration done. Check logs for a complete report."
+            "Scripts after migration running....",
+            request=self.request,
         )
         return self.request.response.redirect(
-            '{0}/migration-results'.format(api.portal.get().absolute_url())
+            "{0}/migration-results".format(api.portal.get().absolute_url())
         )
 
     def scripts_post_migration(self):
         self.generate_broken_links_list()
 
     def cleanup_log_files(self):
-        for type, section in [('in', 'catalogsource'), ('out', 'results')]:
+        for type, section in [("in", "catalogsource"), ("out", "results")]:
             additional_config = get_additional_config(section=section)
             config = get_base_config(section=section)
             config.update(additional_config)
             file_name = config.get(
-                'file-name-{0}'.format(type),
-                'migration_content_{0}.json'.format(type))
-            file_path = '{0}/{1}_{2}'.format(
-                config.get('migration-dir'),
-                api.portal.get().getId(),
-                file_name)
+                "file-name-{0}".format(type),
+                "migration_content_{0}.json".format(type),
+            )
+            file_path = "{0}/{1}_{2}".format(
+                config.get("migration-dir"), api.portal.get().getId(), file_name
+            )
             try:
                 os.remove(file_path)
             except OSError as e:
@@ -106,13 +110,13 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         return get_additional_config(all=True)
 
     def generate_broken_links_list(self):
-        logger.info('Generating broken tinymce internal links.')
-        pc = api.portal.get_tool(name='portal_catalog')
+        logger.info("Generating broken tinymce internal links.")
+        pc = api.portal.get_tool(name="portal_catalog")
         brains = pc()
         broken_urls = []
 
         for brain in brains:
-            if brain.portal_type == 'Discussion Item':
+            if brain.portal_type in self.skip_types_in_link_check:
                 continue
             item = aq_base(brain.getObject())
             for schemata in iterSchemata(item):
@@ -126,8 +130,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                     if not raw_text:
                         continue
                     xml = etree.HTML(raw_text)
-                    for link in xml.xpath('//a'):
-                        match = resolveuid_re.match(link.get('href', ''))
+                    for link in xml.xpath("//a"):
+                        match = resolveuid_re.match(link.get("href", ""))
                         if not match:
                             continue
                         uid, _subpath = match.groups()
@@ -139,15 +143,14 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.write_broken_links(broken_urls)
 
     def write_broken_links(self, paths):
-        additional_config = get_additional_config(section='results')
-        config = get_base_config(section='results')
+        additional_config = get_additional_config(section="results")
+        config = get_base_config(section="results")
         config.update(additional_config)
-        file_name = config.get('broken-links-tiny')
-        file_path = '{0}/{1}_{2}'.format(
-            config.get('migration-dir'),
-            api.portal.get().getId(),
-            file_name)
-        with open(file_path, 'w') as fp:
+        file_name = config.get("broken-links-tiny")
+        file_path = "{0}/{1}_{2}".format(
+            config.get("migration-dir"), api.portal.get().getId(), file_name
+        )
+        with open(file_path, "w") as fp:
             json.dump(paths, fp)
 
 
@@ -157,21 +160,21 @@ class MigrationResults(BrowserView):
     """
 
     def get_results(self):
-        in_json = self.get_json_data(type='in', section='catalogsource')
-        out_json = self.get_json_data(type='out', section='results')
+        in_json = self.get_json_data(type="in", section="catalogsource")
+        out_json = self.get_json_data(type="out", section="results")
 
         results = {
-            'in_count': len(in_json.keys()),
-            'out_count': len(out_json.keys()),
-            'broken_links': self.get_broken_links()
+            "in_count": len(in_json.keys()),
+            "out_count": len(out_json.keys()),
+            "broken_links": self.get_broken_links(),
         }
 
         if out_json.keys() == in_json.keys():
-            results['same_results'] = True
+            results["same_results"] = True
         else:
-            results['same_results'] = False
+            results["same_results"] = False
             diff_keys = set(in_json.keys()) - set(out_json.keys())
-            results['not_migrated'] = [in_json[k] for k in diff_keys]
+            results["not_migrated"] = [in_json[k] for k in diff_keys]
 
         return results
 
@@ -180,23 +183,22 @@ class MigrationResults(BrowserView):
         config = get_base_config(section=section)
         config.update(additional_config)
         file_name = config.get(
-            'file-name-{0}'.format(type),
-            'migration_content_{0}.json'.format(type))
-        file_path = '{0}/{1}_{2}'.format(
-            config.get('migration-dir'),
-            api.portal.get().getId(),
-            file_name)
-        with open(file_path, 'r') as fp:
+            "file-name-{0}".format(type),
+            "migration_content_{0}.json".format(type),
+        )
+        file_path = "{0}/{1}_{2}".format(
+            config.get("migration-dir"), api.portal.get().getId(), file_name
+        )
+        with open(file_path, "r") as fp:
             return json.loads(fp.read())
 
     def get_broken_links(self):
-        additional_config = get_additional_config(section='results')
-        config = get_base_config(section='results')
+        additional_config = get_additional_config(section="results")
+        config = get_base_config(section="results")
         config.update(additional_config)
-        file_name = config.get('broken-links-tiny')
-        file_path = '{0}/{1}_{2}'.format(
-            config.get('migration-dir'),
-            api.portal.get().getId(),
-            file_name)
-        with open(file_path, 'r') as fp:
+        file_name = config.get("broken-links-tiny")
+        file_path = "{0}/{1}_{2}".format(
+            config.get("migration-dir"), api.portal.get().getId(), file_name
+        )
+        with open(file_path, "r") as fp:
             return json.loads(fp.read())

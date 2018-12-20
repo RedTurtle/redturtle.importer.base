@@ -8,6 +8,8 @@ Changelog
 - Added check in schemaupdater for leave field empty when value is empty.
   [eikichi18]
 
+- Fix broken links generation list.
+  [cekk]
 
 1.0.3 (2018-10-18)
 ------------------

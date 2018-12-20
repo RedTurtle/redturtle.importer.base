@@ -5,7 +5,8 @@ Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added check in schemaupdater for leave field empty when value is empty.
+  [eikichi18]
 
 
 1.0.3 (2018-10-18)

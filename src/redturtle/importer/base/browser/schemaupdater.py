@@ -82,15 +82,14 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
                             # Value was given in pipeline, so set it
                             deserializer = IDeserializer(field)
                             try:
-                                value = deserializer(
-                                    value,
-                                    files,
-                                    item,
-                                    self.disable_constraints,
-                                    logger=self.log,
-                                )
-
-                            # try:
+                                if value:
+                                    value = deserializer(
+                                        value,
+                                        files,
+                                        item,
+                                        self.disable_constraints,
+                                        logger=self.log,
+                                    )
                                 field.set(field.interface(obj), value)
                                 continue
                             except Exception:

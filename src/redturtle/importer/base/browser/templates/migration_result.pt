@@ -58,8 +58,16 @@
               <li tal:repeat="link broken_links"><a href="${link}">${link}</a></li>
             </ul>
           </section>
+          <section tal:define="noreference_links results/noreference_links">
+            <h2>No references links</h2>
+            <p class="discreet">List of links without any references.</p>
+            <p tal:condition="not:noreference_links">No orphan links found.</p>
+            <ul tal:condition="noreference_links">
+              <li tal:repeat="link noreference_links"><a href="${link}">${link}</a></li>
+            </ul>
+          </section>
         </div>
-        
+
       </metal:content-core>
     </metal:content-core>
   </body>

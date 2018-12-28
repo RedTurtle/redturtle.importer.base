@@ -86,6 +86,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
     def scripts_post_migration(self):
         self.generate_broken_links_list()
+        self.fix_link_noreference()
 
     def cleanup_log_files(self):
         for type, section in [("in", "catalogsource"), ("out", "results")]:
@@ -153,6 +154,65 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         with open(file_path, "w") as fp:
             json.dump(paths, fp)
 
+    def check_link_exist(self, link, link_path):
+        result = True
+        remote_site = get_additional_config(section="catalogsource")['remote-root']
+        try:
+            if remote_site not in link_path:
+                return True
+        except:
+            if not link.internal_link.to_id:
+                return False
+            return True
+            
+        link_to_check_path = '%s' % (link_path.split(remote_site)[1])
+        if not api.content.get(path=link_to_check_path):
+            result = False
+        return result
+
+    def fix_link_noreference(self):
+        logger.info("Generating noreference links.")
+        noreference_urls = []
+        brains = api.content.find(portal_type='Link')
+        print 'Found {0} items.'.format(len(brains))
+        for brain in brains:
+            no_remote = True
+	    no_internal = True
+
+            link = brain.getObject()
+
+            if link.remoteUrl:
+                if not self.check_link_exist(link, link.remoteUrl):
+                    no_remote = True
+                else:
+                    no_remote = False
+ 
+            if link.internal_link:
+                if not self.check_link_exist(link, link.internal_link):
+                    no_internal = True
+                else:
+                    no_internal = False 
+
+            if no_remote and no_internal:
+                noreference_urls.append(link.absolute_url())
+                logger.warn('Removing {0}'.format(link.absolute_url()))
+                try:
+                    api.content.delete(link)
+                except KeyError:
+                    logger.error('Cannot remove {0}'.format(link.absolute_url()))
+
+        self.write_noreference_links(noreference_urls)
+
+    def write_noreference_links(self, paths):
+        additional_config = get_additional_config(section="results")
+        config = get_base_config(section="results")
+        config.update(additional_config)
+        file_name = config.get("noreference-links")
+        file_path = "{0}/{1}_{2}".format(
+            config.get("migration-dir"), api.portal.get().getId(), file_name
+        )
+        with open(file_path, "w") as fp:
+            json.dump(paths, fp)
 
 class MigrationResults(BrowserView):
     """
@@ -167,6 +227,7 @@ class MigrationResults(BrowserView):
             "in_count": len(in_json.keys()),
             "out_count": len(out_json.keys()),
             "broken_links": self.get_broken_links(),
+            "noreference_links": self.get_noreference_links(),
         }
 
         if out_json.keys() == in_json.keys():
@@ -197,6 +258,17 @@ class MigrationResults(BrowserView):
         config = get_base_config(section="results")
         config.update(additional_config)
         file_name = config.get("broken-links-tiny")
+        file_path = "{0}/{1}_{2}".format(
+            config.get("migration-dir"), api.portal.get().getId(), file_name
+        )
+        with open(file_path, "r") as fp:
+            return json.loads(fp.read())
+
+    def get_noreference_links(self):
+        additional_config = get_additional_config(section="results")
+        config = get_base_config(section="results")
+        config.update(additional_config)
+        file_name = config.get("noreference-links")
         file_path = "{0}/{1}_{2}".format(
             config.get("migration-dir"), api.portal.get().getId(), file_name
         )

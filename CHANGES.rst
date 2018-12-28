@@ -5,6 +5,9 @@ Changelog
 1.0.4 (unreleased)
 ------------------
 
+- Added check in schemaupdater for leave field empty when value is empty.
+  [eikichi18]
+
 - Fix broken links generation list.
   [cekk]
 

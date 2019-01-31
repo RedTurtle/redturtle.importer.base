@@ -173,20 +173,16 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     def fix_link_noreference(self):
         logger.info("Generating noreference links.")
         noreference_urls = []
+        portal_id = api.portal.get().getId()
         brains = api.content.find(portal_type='Link')
         print 'Found {0} items.'.format(len(brains))
         for brain in brains:
-            no_remote = True
-
-            link = brain.getObject()
-
-            if link.remoteUrl:
-                if not self.check_link_exist(link, link.remoteUrl):
-                    no_remote = True
-                else:
-                    no_remote = False 
-
-            if no_remote:
+            if 'resolveuid' not in brain.getRemoteUrl:
+                # external url
+                continue
+            uid = brain.getRemoteUrl.replace('/{0}/resolveuid/'.format(portal_id), '')
+            if not api.content.find(UID=uid): 
+                link = brain.getObject()
                 noreference_urls.append(link.absolute_url())
                 logger.warn('Removing {0}'.format(link.absolute_url()))
                 try:

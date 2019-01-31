@@ -177,7 +177,6 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         print 'Found {0} items.'.format(len(brains))
         for brain in brains:
             no_remote = True
-	    no_internal = True
 
             link = brain.getObject()
 
@@ -185,15 +184,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 if not self.check_link_exist(link, link.remoteUrl):
                     no_remote = True
                 else:
-                    no_remote = False
- 
-            if link.internal_link:
-                if not self.check_link_exist(link, link.internal_link):
-                    no_internal = True
-                else:
-                    no_internal = False 
+                    no_remote = False 
 
-            if no_remote and no_internal:
+            if no_remote:
                 noreference_urls.append(link.absolute_url())
                 logger.warn('Removing {0}'.format(link.absolute_url()))
                 try:

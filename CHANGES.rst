@@ -1,15 +1,18 @@
 Changelog
 =========
 
-
 1.0.4 (unreleased)
 ------------------
+
+- Added fix for links without any references. Added dedicated report after migration.
+  [daniele]
 
 - Added check in schemaupdater for leave field empty when value is empty.
   [eikichi18]
 
 - Fix broken links generation list.
   [cekk]
+
 
 1.0.3 (2018-10-18)
 ------------------

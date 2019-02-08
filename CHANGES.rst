@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.4 (unreleased)
+1.0.4 (2019-02-08)
 ------------------
 
 - Added fix for links without any references. Added dedicated report after migration.

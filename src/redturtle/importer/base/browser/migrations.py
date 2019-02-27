@@ -66,7 +66,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         else:
                             value = [uuidToObject(uuid) for uuid in value]
                         deserializer = IDeserializer(field)
-                        value = deserializer(value, [], {}, True, logger=logger)
+                        value = deserializer(
+                            value, [], {}, True, logger=logger
+                        )
                         # self.disable_constraints,
                         # logger=self.log,
                         field.set(field.interface(obj), value)
@@ -98,7 +100,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 "migration_content_{0}.json".format(type),
             )
             file_path = "{0}/{1}_{2}".format(
-                config.get("migration-dir"), api.portal.get().getId(), file_name
+                config.get("migration-dir"),
+                api.portal.get().getId(),
+                file_name
             )
             try:
                 os.remove(file_path)
@@ -156,15 +160,17 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
     def check_link_exist(self, link, link_path):
         result = True
-        remote_site = get_additional_config(section="catalogsource")['remote-root']
+        remote_site = get_additional_config(
+            section="catalogsource"
+        )['remote-root']
         try:
             if remote_site not in link_path:
                 return True
-        except:
+        except Exception:
             if not link.internal_link.to_id:
                 return False
             return True
-            
+
         link_to_check_path = '%s' % (link_path.split(remote_site)[1])
         if not api.content.get(path=link_to_check_path):
             result = False
@@ -180,15 +186,20 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             if 'resolveuid' not in brain.getRemoteUrl:
                 # external url
                 continue
-            uid = brain.getRemoteUrl.replace('/{0}/resolveuid/'.format(portal_id), '')
-            if not api.content.find(UID=uid): 
+            uid = brain.getRemoteUrl.replace(
+                '/{0}/resolveuid/'.format(portal_id),
+                ''
+            )
+            if not api.content.find(UID=uid):
                 link = brain.getObject()
                 noreference_urls.append(link.absolute_url())
                 logger.warn('Removing {0}'.format(link.absolute_url()))
                 try:
-                    api.content.delete(link)
+                    api.content.delete(obj=link, check_linkintegrity=False)
                 except KeyError:
-                    logger.error('Cannot remove {0}'.format(link.absolute_url()))
+                    logger.error(
+                        'Cannot remove {0}'.format(link.absolute_url())
+                    )
 
         self.write_noreference_links(noreference_urls)
 
@@ -202,6 +213,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         )
         with open(file_path, "w") as fp:
             json.dump(paths, fp)
+
 
 class MigrationResults(BrowserView):
     """

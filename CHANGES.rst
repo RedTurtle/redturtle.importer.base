@@ -4,7 +4,8 @@ Changelog
 1.0.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- fixed fix_link_noreference function.
+  [eikichi18]
 
 
 1.0.4 (2019-02-08)

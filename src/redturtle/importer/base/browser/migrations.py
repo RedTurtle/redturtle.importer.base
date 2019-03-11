@@ -182,9 +182,12 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         portal_id = api.portal.get().getId()
         brains = api.content.find(portal_type='Link')
         print 'Found {0} items.'.format(len(brains))
+
         for brain in brains:
-            if 'resolveuid' not in brain.getRemoteUrl:
-                # external url
+            remote_url = brain.getRemoteUrl
+            if not remote_url:
+                continue
+            if 'resolveuid' not in remote_url:
                 continue
             uid = brain.getRemoteUrl.replace(
                 '/{0}/resolveuid/'.format(portal_id),

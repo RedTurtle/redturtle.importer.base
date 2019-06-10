@@ -60,7 +60,7 @@ class ContentsMappingSection(object):
                 )
                 criteria.update({'o': proper_operation})
             # Fix path format if a uid is specified
-            if 'path' in criteria.values():
+            if 'path' in list(criteria.values()):
                 path_value = criteria.get('v')
                 if '::' not in path_value:
                     continue
@@ -71,7 +71,7 @@ class ContentsMappingSection(object):
 
     def __iter__(self):
         for item in self.previous:
-            keys = item.keys()
+            keys = list(item.keys())
             typekey = self.typekey(*keys)[0]
             pathkey = self.pathkey(*keys)[0]
 

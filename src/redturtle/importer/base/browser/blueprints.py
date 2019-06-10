@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from AccessControl.interfaces import IRoleManager
 from Acquisition import aq_base
 from collective.transmogrifier.interfaces import ISection
@@ -32,6 +33,8 @@ import logging
 import pkg_resources
 import pprint
 import transaction
+import six
+from six.moves import zip
 
 
 try:
@@ -149,8 +152,8 @@ class DataFields(object):
                                 value = deserializer(item[key], None, item)
                                 field.set(field.interface(obj), value)
                     if not field:
-                        print(u'Can\'t find a suitable '
-                              u'destination field {0}'.format(fieldname))
+                        print((u'Can\'t find a suitable '
+                              u'destination field {0}'.format(fieldname)))
             yield item
 
 
@@ -183,8 +186,8 @@ class WorkflowHistory(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            workflowhistorykey = self.workflowhistorykey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            workflowhistorykey = self.workflowhistorykey(*list(item.keys()))[0]
 
             if not pathkey or not workflowhistorykey or \
                workflowhistorykey not in item:  # not enough info
@@ -213,7 +216,7 @@ class WorkflowHistory(object):
                 # Asuming one workflow
                 try:
                     item_tmp[workflowhistorykey].update(
-                        {current_obj_wf: item_tmp[workflowhistorykey][item_tmp[workflowhistorykey].keys()[0]]})  # noqa
+                        {current_obj_wf: item_tmp[workflowhistorykey][list(item_tmp[workflowhistorykey].keys())[0]]})  # noqa
                 except Exception:
                     logger.error(u'Failed to copy history to the new'
                                  u' workflow for {0}'.format(
@@ -276,8 +279,8 @@ class LocalRoles(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            roleskey = self.roleskey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            roleskey = self.roleskey(*list(item.keys()))[0]
 
             if not pathkey or not roleskey or \
                roleskey not in item:    # not enough info
@@ -332,8 +335,8 @@ class LeftOvers(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            propertieskey = self.propertieskey(*item.keys())[0]  # noqa
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            propertieskey = self.propertieskey(*list(item.keys()))[0]  # noqa
 
             if not pathkey:
                 # not enough info
@@ -439,8 +442,8 @@ class Discussions(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            typekey = self.comment_type_key(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            typekey = self.comment_type_key(*list(item.keys()))[0]
             # item doesn't exist or the type of comment cannot be
             # created
 #            if not pathkey or not typekey:
@@ -463,14 +466,14 @@ class Discussions(object):
             conversation = IConversation(obj)
 
             # remove all comments to avoid duplication when override is disabled  # noqa
-            if conversation.items():
+            if list(conversation.items()):
                 comments_id = [x[0] for x in conversation.items()]
                 for value in comments_id:
                     try:
                         del conversation[value]
                     except Exception:
-                        print 'WARNING: Discussion with id {0} not found'.format(  # noqa
-                            value)
+                        print('WARNING: Discussion with id {0} not found'.format(  # noqa
+                            value))
                         pass
 
             for comment in discussion:
@@ -506,8 +509,8 @@ class Discussions(object):
                     {comment.get('comment_id'): int(new_comment.comment_id)}
                 )
 
-                print('Added comment with id {0} to item {1}'.format(
-                    new_comment.comment_id, obj.absolute_url()))
+                print(('Added comment with id {0} to item {1}'.format(
+                    new_comment.comment_id, obj.absolute_url())))
             yield item
 
 
@@ -542,8 +545,8 @@ class FieldsCorrector(object):
     def __iter__(self):
 
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            propertieskey = self.propertieskey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            propertieskey = self.propertieskey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info
@@ -597,7 +600,7 @@ class PAMLinker(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
 
             if HAS_PAM:
                 if not pathkey:
@@ -659,7 +662,7 @@ class OrderSection(object):
         # each parent path {parent_path: {item_id: item_pos}}.
         positions_mapping = {}
         for item in self.previous:
-            keys = item.keys()
+            keys = list(item.keys())
             pathkey = self.pathkey(*keys)[0]
             poskey = self.poskey(*keys)[0]
 
@@ -679,7 +682,7 @@ class OrderSection(object):
         for path, positions in positions_mapping.items():
 
             # Normalize positions
-            ordered_keys = sorted(positions.keys(), key=lambda x: positions[x])
+            ordered_keys = sorted(list(positions.keys()), key=lambda x: positions[x])
             normalized_positions = {}
             for pos, key in enumerate(ordered_keys):
                 normalized_positions[key] = pos
@@ -752,7 +755,7 @@ class PathManipulator(object):
 
     def __iter__(self):
         for item in self.previous:
-            template = unicode(self.template(item))
+            template = six.text_type(self.template(item))
             result_path = ['', ]
             if self.condition(item, key=template):
                 original_path = item['_path'].split('/')
@@ -768,7 +771,7 @@ class PathManipulator(object):
                 # One to one substitution, no wildcards
                 if len(original_path) == len(template) and \
                    u'*' not in template and u'**' not in template:
-                    actions = zip(original_path, template)
+                    actions = list(zip(original_path, template))
                     for p_path, operator in actions:
                         if operator not in self.available_operators:
                             # Substitute one string for the other
@@ -783,7 +786,7 @@ class PathManipulator(object):
                 if u'*' in template or u'**' in template:
                     index = template.index(u'*')
                     # Process the head of the path (until wildcard)
-                    head = zip(original_path, template[:index])
+                    head = list(zip(original_path, template[:index]))
                     for p_path, operator in head:
                         if operator not in self.available_operators:
                             # Substitute one string for the other
@@ -801,8 +804,8 @@ class PathManipulator(object):
                     # Process the tail of the path (from wildcard)
                     original_path_reversed = list(original_path)
                     original_path_reversed.reverse()
-                    tail = zip(original_path_reversed,
-                               template[-tail_path_length])
+                    tail = list(zip(original_path_reversed,
+                               template[-tail_path_length]))
 
                     # Complete the tail
                     for p_path, operator in tail:

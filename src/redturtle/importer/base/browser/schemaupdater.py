@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from plone.dexterity.interfaces import IDexterityContent
@@ -33,7 +34,7 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
             # not enough info
             if not pathkey:
                 yield item
@@ -131,5 +132,5 @@ class DexterityUpdateSection(BaseDexterityUpdateSection):
                 try:
                     notify(ObjectModifiedEvent(obj))
                 except Exception:
-                    print 'Error probably in linkintegrity transform'
+                    print('Error probably in linkintegrity transform')
             yield item

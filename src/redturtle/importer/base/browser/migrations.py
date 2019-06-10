@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from AccessControl import Unauthorized
 from Acquisition import aq_base
 from collective.transmogrifier.transmogrifier import Transmogrifier
@@ -20,6 +21,7 @@ from zope.schema import getFieldsInOrder
 import errno
 import json
 import os
+import six
 
 
 class RedTurtlePlone5MigrationMain(BrowserView):
@@ -61,7 +63,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             for schemata in iterSchemata(obj):
                 for name, field in getFieldsInOrder(schemata):
                     if name == fieldname:
-                        if isinstance(value, basestring):
+                        if isinstance(value, six.string_types):
                             value = uuidToObject(value)
                         else:
                             value = [uuidToObject(uuid) for uuid in value]
@@ -181,7 +183,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         noreference_urls = []
         portal_id = api.portal.get().getId()
         brains = api.content.find(portal_type='Link')
-        print 'Found {0} items.'.format(len(brains))
+        print('Found {0} items.'.format(len(brains)))
 
         for brain in brains:
             remote_url = brain.getRemoteUrl
@@ -228,13 +230,13 @@ class MigrationResults(BrowserView):
         out_json = self.get_json_data(type="out", section="results")
 
         results = {
-            "in_count": len(in_json.keys()),
-            "out_count": len(out_json.keys()),
+            "in_count": len(list(in_json.keys())),
+            "out_count": len(list(out_json.keys())),
             "broken_links": self.get_broken_links(),
             "noreference_links": self.get_noreference_links(),
         }
 
-        if out_json.keys() == in_json.keys():
+        if list(out_json.keys()) == list(in_json.keys()):
             results["same_results"] = True
         else:
             results["same_results"] = False

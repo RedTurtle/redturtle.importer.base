@@ -24,7 +24,7 @@ class ConstructorSection(BaseConstructorSection):
 
     def __iter__(self):
         for item in self.previous:
-            keys = item.keys()
+            keys = list(item.keys())
             typekey = self.typekey(*keys)[0]
             pathkey = self.pathkey(*keys)[0]
 

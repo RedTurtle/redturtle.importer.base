@@ -120,7 +120,7 @@ class CachedCatalogSourceSection(CatalogSourceSection):
             return {}
 
         # incremental migration
-        if self.incremental_migration and 'relatedItems' not in item.keys():
+        if self.incremental_migration and 'relatedItems' not in list(item.keys()):
             local_obj = self.get_local_obj(path)
             if local_obj:
                 local_object_modification_date = getattr(
@@ -148,7 +148,7 @@ class CachedCatalogSourceSection(CatalogSourceSection):
 
         # check element in cache
         if not self.ignore_cache and os.path.exists(cachefile) \
-                and 'relatedItems' not in item.keys():
+                and 'relatedItems' not in list(item.keys()):
             json_data = json.load(open(cachefile, 'rb'))
             item_mod_date = datetime.strptime(
                 item.get('modification_date'),

@@ -18,7 +18,7 @@ from plone.app.discussion.interfaces import IConversation
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IUUID
-from ploneorg.migration.interfaces import IDeserializer
+from transmogrify.dexterity.interfaces import IDeserializer
 from Products.Archetypes.interfaces import IBaseObject
 from redturtle.importer.base import logger
 from redturtle.importer.base.interfaces import IMigrationContextSteps
@@ -53,7 +53,7 @@ else:
     from cioppino.twothumbs import rate
     HAS_RATINGS = True
 
-VALIDATIONKEY = 'ploneorg.migration.logger'
+VALIDATIONKEY = 'redturtle.importer.base.logger'
 
 
 @implementer(ISection)
@@ -104,8 +104,7 @@ class DataFields(object):
                 yield item
                 continue
 
-            obj = self.context.unrestrictedTraverse(
-                str(item['_path'].lstrip('/')), None)
+            obj = self.context.unrestrictedTraverse(str(item['_path'].lstrip('/')), None)
 
             # path doesn't exist
             if obj is None:
@@ -119,6 +118,7 @@ class DataFields(object):
             if '/'.join(obj.getPhysicalPath()[self.root_path_length:]) != path:
                 yield item
                 continue
+
             for key in item.keys():
 
                 if not key.startswith(self.datafield_prefix):
@@ -131,7 +131,7 @@ class DataFields(object):
                     field = obj.getField(fieldname)
                     if field is None:
                         continue
-                    if 'data' in item[key]:
+                    if item[key].has_key('data'):
                         value = base64.b64decode(item[key]['data'])
                     else:
                         value = ''
@@ -152,8 +152,7 @@ class DataFields(object):
                                 value = deserializer(item[key], None, item)
                                 field.set(field.interface(obj), value)
                     if not field:
-                        print((u'Can\'t find a suitable '
-                              u'destination field {0}'.format(fieldname)))
+                        print('Can\'t find a suitable destination field '.format(fieldname))
             yield item
 
 
@@ -251,7 +250,6 @@ class WorkflowHistory(object):
 
             yield item
 
-
 @implementer(ISection)
 class LocalRoles(object):
     """ """
@@ -279,18 +277,15 @@ class LocalRoles(object):
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*list(item.keys()))[0]
-            roleskey = self.roleskey(*list(item.keys()))[0]
+            pathkey = self.pathkey(*item.keys())[0]
+            roleskey = self.roleskey(*item.keys())[0]
 
             if not pathkey or not roleskey or \
                roleskey not in item:    # not enough info
-                yield item
-                continue
-            obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
+                yield item; continue
+            obj = self.context.unrestrictedTraverse(str(item[pathkey]).lstrip('/'), None)
             if obj is None:             # path doesn't exist
-                yield item
-                continue
+                yield item; continue
 
             if IRoleManager.providedBy(obj):
                 for principal, roles in item[roleskey].items():
@@ -298,12 +293,8 @@ class LocalRoles(object):
                         obj.manage_addLocalRoles(principal, roles)
                         try:
                             obj.reindexObjectSecurity()
-                        except Exception:
-                            logger.error(
-                                'Failed to reindexObjectSecurity {0}'.format(
-                                    item['_path']
-                                )
-                            )
+                        except:
+                            migration_error.error('Failed to reindexObjectSecurity {}'.format(item['_path']))
             yield item
 
 
@@ -538,28 +529,23 @@ class FieldsCorrector(object):
         if 'properties-key' in options:
             propertieskeys = options['properties-key'].splitlines()
         else:
-            propertieskeys = defaultKeys(
-                options['blueprint'], name, 'properties')
+            propertieskeys = defaultKeys(options['blueprint'], name, 'properties')
         self.propertieskey = Matcher(*propertieskeys)
 
     def __iter__(self):
-
         for item in self.previous:
-            pathkey = self.pathkey(*list(item.keys()))[0]
-            propertieskey = self.propertieskey(*list(item.keys()))[0]
+            pathkey = self.pathkey(*item.keys())[0]
+            propertieskey = self.propertieskey(*item.keys())[0]
 
             if not pathkey:
                 # not enough info
-                yield item
-                continue
+                yield item; continue
 
-            obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
+            obj = self.context.unrestrictedTraverse(str(item[pathkey]).lstrip('/'), None)
 
             if obj is None:
                 # path doesn't exist
-                yield item
-                continue
+                yield item; continue
 
             # Event specific fields
             if item.get('startDate', False):
@@ -905,3 +891,4 @@ class ContextFixes(object):
                 yield item
                 continue
             yield item
+

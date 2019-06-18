@@ -3,6 +3,7 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:plone="http://namespaces.plone.org/plone"
     xmlns:transmogrifier="http://namespaces.plone.org/transmogrifier"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
     i18n_domain="redturtle.importer.base">
 
 
@@ -23,6 +24,31 @@
   </unconfigure>
 
   <utility
+      component=".blueprints.PrettyPrinter"
+      name="redturtle.importer.base.sections.pprinter"
+      />
+
+  <utility
+      component=".logger.LoggerSection"
+      name="redturtle.importer.base.sections.logger"
+      />
+
+  <utility
+      component=".blueprints.FieldsCorrector"
+      name="redturtle.importer.base.sections.fieldscorrector"
+      />
+
+  <utility
+      component=".blueprints.DataFields"
+      name="redturtle.importer.base.sections.datafields"
+      />
+    
+  <utility
+      component=".blueprints.LocalRoles"
+      name="redturtle.importer.base.sections.localroles"
+      />
+
+  <utility
       component=".source.CachedCatalogSourceSection"
       name="redturtle.migration.cachedcatalogsource"
       />
@@ -39,17 +65,17 @@
 
   <utility
       component=".blueprints.LeftOvers"
-      name="redturtle.importer.base.leftovers"
+      name="redturtle.importer.base.sections.leftovers"
       />
 
   <utility
       component=".blueprints.Discussions"
-      name="redturtle.importer.base.discussions"
+      name="redturtle.importer.base.sections.discussions"
       />
   
   <utility
       component=".blueprints.ContextFixes"
-      name="redturtle.importer.base.context_fixes"
+      name="redturtle.importer.base.sections.context_fixes"
       />
 
   <utility
@@ -59,7 +85,7 @@
 
   <utility
       component=".schemaupdater.DexterityUpdateSection"
-      name="redturtle.importer.base.schemaupdater"
+      name="redturtle.importer.base.sections.schemaupdater"
       />
 
   <utility
@@ -74,10 +100,12 @@
 
   <utility
       component=".migrationresults.MigrationResults"
-      name="redturtle.importer.base.migrationresults"
+      name="redturtle.importer.base.sections.migrationresults"
       />
 
-  <adapter factory=".converters.MasterSelectDeserializer" />
+  <configure zcml:condition="not-have plone-52">
+    <adapter factory=".converters.MasterSelectDeserializer" />
+  </configure>
 
   <transmogrifier:registerConfig
     name="redturtle.plone5.main"

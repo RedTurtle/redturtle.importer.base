@@ -75,6 +75,9 @@ class ContentsMappingSection(object):
             typekey = self.typekey(*keys)[0]
             pathkey = self.pathkey(*keys)[0]
 
+            if item[typekey] == 'Plone Site':
+                continue
+
             # integrazione check del tipo all'interno di questo ciclo
             skip = False
             if getattr(self, 'exclude_type', None):

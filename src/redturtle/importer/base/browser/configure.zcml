@@ -103,10 +103,6 @@
       name="redturtle.importer.base.sections.migrationresults"
       />
 
-  <configure zcml:condition="not-have plone-52">
-    <adapter factory=".converters.MasterSelectDeserializer" />
-  </configure>
-
   <transmogrifier:registerConfig
     name="redturtle.plone5.main"
     title="Migration configuration for querying the catalog of a Plone site"

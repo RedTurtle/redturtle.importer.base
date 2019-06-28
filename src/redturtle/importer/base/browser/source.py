@@ -4,7 +4,7 @@ from collective.transmogrifier.interfaces import ISectionBlueprint
 from datetime import datetime
 from plone import api
 from redturtle.importer.base.utils import get_additional_config
-from zope.interface import classProvides
+from zope.interface import provider
 from zope.interface import implementer
 from zope.annotation.interfaces import IAnnotations
 
@@ -15,7 +15,9 @@ import json
 import logging
 import os
 import requests
-import urllib
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 
 
 VALIDATIONKEY = "redturtle.importer.base.logger"
@@ -26,9 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class CachedCatalogSourceSection(object):
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
         # read additional config in cfg file, and apply to default
         additional_config = get_additional_config("catalogsource")
@@ -103,6 +104,22 @@ class CachedCatalogSourceSection(object):
             1,
         )
 
+    def get_option(self, name, default):
+        """Get an option from the request if available and fallback to the
+        transmogrifier config.
+        """
+        request = getattr(self.context, "REQUEST", None)
+        if request is not None:
+            value = request.form.get(
+                "form.widgets." + name.replace("-", "_"),
+                self.options.get(name, default),
+            )
+        else:
+            value = self.options.get(name, default)
+        # if isinstance(value, unicode):
+        #     value = value.encode('utf8')
+        return value
+
     def __iter__(self):
         for item in self.previous:
             yield item
@@ -159,7 +176,10 @@ class CachedCatalogSourceSection(object):
         return obj
 
     def ploneorg_migration_get_remote_item(self, path):
-        item_url = "%s%s/get_item" % (self.remote_url, urllib.quote(path))
+        item_url = "%s%s/get_item" % (
+            self.remote_url,
+            six.moves.urllib.parse.quote(path),
+        )
 
         resp = requests.get(
             item_url,

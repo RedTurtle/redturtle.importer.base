@@ -45,7 +45,6 @@ setup(
         "Products.GenericSetup>=1.8.2",
         "setuptools",
         "z3c.jbot",
-        "ploneorg.migration",
         "z3c.unconfigure",
         "transmogrify.dexterity>=1.6.3",
     ],

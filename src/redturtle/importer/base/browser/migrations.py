@@ -29,7 +29,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     Migration view
     """
 
-    transmogrifier_conf = "redturtle.plone5.main"
+    transmogrifier_conf = "redturtlePlone5Main"
     skip_types_in_link_check = ["Discussion Item"]
 
     def __call__(self):
@@ -104,7 +104,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             file_path = "{0}/{1}_{2}".format(
                 config.get("migration-dir"),
                 api.portal.get().getId(),
-                file_name
+                file_name,
             )
             try:
                 os.remove(file_path)
@@ -162,9 +162,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
     def check_link_exist(self, link, link_path):
         result = True
-        remote_site = get_additional_config(
-            section="catalogsource"
-        )['remote-root']
+        remote_site = get_additional_config(section="catalogsource")[
+            "remote-root"
+        ]
         try:
             if remote_site not in link_path:
                 return True
@@ -173,7 +173,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 return False
             return True
 
-        link_to_check_path = '%s' % (link_path.split(remote_site)[1])
+        link_to_check_path = "%s" % (link_path.split(remote_site)[1])
         if not api.content.get(path=link_to_check_path):
             result = False
         return result
@@ -182,28 +182,27 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         logger.info("Generating noreference links.")
         noreference_urls = []
         portal_id = api.portal.get().getId()
-        brains = api.content.find(portal_type='Link')
-        print('Found {0} items.'.format(len(brains)))
+        brains = api.content.find(portal_type="Link")
+        print("Found {0} items.".format(len(brains)))
 
         for brain in brains:
             remote_url = brain.getRemoteUrl
             if not remote_url:
                 continue
-            if 'resolveuid' not in remote_url:
+            if "resolveuid" not in remote_url:
                 continue
             uid = brain.getRemoteUrl.replace(
-                '/{0}/resolveuid/'.format(portal_id),
-                ''
+                "/{0}/resolveuid/".format(portal_id), ""
             )
             if not api.content.find(UID=uid):
                 link = brain.getObject()
                 noreference_urls.append(link.absolute_url())
-                logger.warn('Removing {0}'.format(link.absolute_url()))
+                logger.warn("Removing {0}".format(link.absolute_url()))
                 try:
                     api.content.delete(obj=link, check_linkintegrity=False)
                 except KeyError:
                     logger.error(
-                        'Cannot remove {0}'.format(link.absolute_url())
+                        "Cannot remove {0}".format(link.absolute_url())
                     )
 
         self.write_noreference_links(noreference_urls)

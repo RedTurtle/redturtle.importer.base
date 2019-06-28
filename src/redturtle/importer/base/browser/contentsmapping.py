@@ -6,15 +6,15 @@ from collective.transmogrifier.utils import defaultMatcher
 from collective.transmogrifier.utils import Matcher
 from redturtle.importer.base import logger
 from redturtle.importer.base.utils import get_additional_config
-from zope.interface import classProvides
-from zope.interface import implements
+from zope.interface import provider
+from zope.interface import implementer
 
 import ast
 
 
+@implementer(ISection)
+@provider(ISectionBlueprint)
 class ContentsMappingSection(object):
-    classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         # read additional config in cfg file, and apply to default

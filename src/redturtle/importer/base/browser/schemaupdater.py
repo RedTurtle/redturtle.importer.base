@@ -12,7 +12,7 @@ from z3c.relationfield.interfaces import IRelationList
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 from zope.event import notify
-from zope.interface import classProvides
+from zope.interface import provider
 from zope.interface import implementer
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
@@ -29,8 +29,8 @@ _marker = object()
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class DexterityUpdateSection(object):
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier

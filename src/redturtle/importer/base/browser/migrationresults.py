@@ -2,7 +2,7 @@
 from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from plone import api
-from zope.interface import classProvides
+from zope.interface import provider
 from zope.interface import implementer
 
 import json
@@ -10,8 +10,8 @@ import os
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class MigrationResults(object):
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous

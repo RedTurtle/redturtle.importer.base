@@ -1,7 +1,7 @@
 import logging
 from time import time
 
-from zope.interface import classProvides, implements
+from zope.interface import provider, implementer
 from zope.annotation.interfaces import IAnnotations
 
 from collective.transmogrifier.interfaces import ISectionBlueprint
@@ -13,9 +13,9 @@ ERROREDKEY = "redturtle.importer.base.errors"
 COUNTKEY = "redturtle.importer.base.count"
 
 
+@implementer(ISection)
+@provider(ISectionBlueprint)
 class LoggerSection(object):
-    classProvides(ISectionBlueprint)
-    implements(ISection)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier

@@ -4,9 +4,10 @@ from collective.transmogrifier.transmogrifier import configuration_registry
 import six.moves.configparser
 
 
-def get_base_config(section='', all=False):
+def get_base_config(section="", all=False):
     base_config_path = configuration_registry.getConfiguration(
-        'redturtle.plone5.main').get('configuration')
+        "redturtlePlone5Main"
+    ).get("configuration")
     config = six.moves.configparser.ConfigParser()
     config.read(base_config_path)
     if all:
@@ -16,9 +17,9 @@ def get_base_config(section='', all=False):
     return get_config_for_section(config, section)
 
 
-def get_additional_config(section='', all=False):
+def get_additional_config(section="", all=False):
     config = six.moves.configparser.ConfigParser()
-    config.read('.migrationconfig.cfg')
+    config.read(".migrationconfig.cfg")
     if all:
         return get_all_config(config)
     if not config.has_section(section):
@@ -27,8 +28,9 @@ def get_additional_config(section='', all=False):
 
 
 def get_all_config(config):
-    return [{'id': x, 'config': list(config.items(x))}
-            for x in config.sections()]
+    return [
+        {"id": x, "config": list(config.items(x))} for x in config.sections()
+    ]
 
 
 def get_config_for_section(config, section):

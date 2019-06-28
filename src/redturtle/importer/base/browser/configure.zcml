@@ -16,6 +16,13 @@
 
   <!-- Importer configuration -->
   <include package="collective.transmogrifier" file="meta.zcml" />
+
+  <transmogrifier:registerConfig
+    name="redturtlePlone5Main"
+    title="Migration configuration for querying the catalog of a Plone site"
+    configuration="redturtleplone5.cfg"
+    />
+
   <include package="z3c.unconfigure" file="meta.zcml" />
 
   <include package="transmogrify.dexterity" file="converters.zcml" />
@@ -36,11 +43,6 @@
   <utility
       component=".blueprints.FieldsCorrector"
       name="redturtle.importer.base.sections.fieldscorrector"
-      />
-
-  <utility
-      component=".blueprints.DataFields"
-      name="redturtle.importer.base.sections.datafields"
       />
     
   <utility
@@ -102,12 +104,6 @@
       component=".migrationresults.MigrationResults"
       name="redturtle.importer.base.sections.migrationresults"
       />
-
-  <transmogrifier:registerConfig
-    name="redturtle.plone5.main"
-    title="Migration configuration for querying the catalog of a Plone site"
-    configuration="redturtleplone5.cfg"
-    />
 
   <browser:page
     for="Products.CMFPlone.interfaces.IPloneSiteRoot"

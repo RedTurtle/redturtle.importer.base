@@ -56,7 +56,6 @@ class ConstructorSection(BaseConstructorSection):
                 # fti = self.ttool.getTypeInfo('Folder')
                 raise Exception("Missing {0} content type".format(type_))
 
-            path = path.encode("ASCII")
             container, id = posixpath.split(path.strip("/"))
             context = traverse(self.context, container, None)
             if context is None:

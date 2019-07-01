@@ -76,7 +76,7 @@ class DexterityUpdateSection(object):
                 continue
 
             obj = self.context.unrestrictedTraverse(
-                path.encode().lstrip("/"), None
+                path.lstrip("/"), None
             )
 
             # path doesn't exist
@@ -96,9 +96,9 @@ class DexterityUpdateSection(object):
 
                 # For all fields in the schema, update in roughly the same way
                 # z3c.form.widget.py would
-                # import pdb; pdb.set_trace()
                 for schemata in iterSchemata(obj):
                     for name, field in getFieldsInOrder(schemata):
+
                         if name == "id":
                             continue
                         if field.readonly:

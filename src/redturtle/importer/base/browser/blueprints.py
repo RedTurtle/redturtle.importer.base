@@ -226,7 +226,7 @@ class WorkflowHistory(object):
                 yield item
                 continue
 
-            if IBaseObject.providedBy(obj) or IDexterityContent.providedBy(
+            if IDexterityContent.providedBy(
                 obj
             ):
                 item_tmp = deepcopy(item)

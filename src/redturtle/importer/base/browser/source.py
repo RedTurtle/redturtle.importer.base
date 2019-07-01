@@ -50,7 +50,7 @@ class CachedCatalogSourceSection(object):
 
         catalog_query = self.get_option("catalog-query", None)
         catalog_query = " ".join(catalog_query.split())
-        catalog_query = base64.b64encode(catalog_query)
+        catalog_query = base64.b64encode(catalog_query.encode("utf-8"))
 
         self.remote_skip_paths = self.get_option(
             "remote-skip-paths", ""
@@ -164,7 +164,7 @@ class CachedCatalogSourceSection(object):
 
     def slugify(self, path):
         # TODO verificare che non ci siano collisioni
-        return hashlib.sha224(path).hexdigest()
+        return hashlib.sha224(path.encode("utf-8")).hexdigest()
         # return base64.urlsafe_b64encode(path)
 
     def get_local_obj(self, path):
@@ -269,7 +269,7 @@ class CachedCatalogSourceSection(object):
             logger.info("MISS path: {0}".format(path))
 
         if item:
-            json.dump(item, open(cachefile, "wb"), indent=2)
+            json.dump(item, open(cachefile, "w", encoding='utf-8' ), indent=2)
 
         self.debug_infos[item.get("_uid")] = {
             "id": item.get("_id"),

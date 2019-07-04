@@ -47,6 +47,7 @@ setup(
         "z3c.jbot",
         "z3c.unconfigure",
         "transmogrify.dexterity>=1.6.3",
+        "collective.jsonmigrator",
     ],
     extras_require={
         "test": [

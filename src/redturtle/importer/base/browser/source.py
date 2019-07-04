@@ -68,12 +68,14 @@ class CachedCatalogSourceSection(object):
 
         # Make request
         resp = requests.get(
-            "{}{}/get_catalog_results".format(self.remote_url, catalog_path),
+            "{}{}/rt_get_catalog_results".format(
+                self.remote_url, catalog_path
+            ),
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
 
-        self.item_paths = sorted(json.loads(resp.text))
+        self.item_paths = json.loads(resp.text)
         self.item_count["total"] = len(self.item_paths)
         self.item_count["remaining"] = len(self.item_paths)
 
@@ -269,7 +271,7 @@ class CachedCatalogSourceSection(object):
             logger.info("MISS path: {0}".format(path))
 
         if item:
-            json.dump(item, open(cachefile, "w", encoding='utf-8' ), indent=2)
+            json.dump(item, open(cachefile, "w", encoding="utf-8"), indent=2)
 
         self.debug_infos[item.get("_uid")] = {
             "id": item.get("_id"),

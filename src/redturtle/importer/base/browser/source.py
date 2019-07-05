@@ -192,7 +192,7 @@ class CachedCatalogSourceSection(object):
         if resp.status_code == 200:
             item_json = resp.text
         else:
-            logger.error(
+            logger.debug(
                 "Failed reading item from %s. %s" % (path, resp.status_code)
             )
             self.errored.append(path)
@@ -200,8 +200,8 @@ class CachedCatalogSourceSection(object):
         try:
             item = json.loads(item_json)
         except:
-            logger.error("Could not decode item from %s." % item_url)
-            logger.error("Response is %s." % item_json)
+            logger.debug("Could not decode item from %s." % item_url)
+            logger.debug("Response is %s." % item_json)
             self.errored.append(path)
             return None
         return item
@@ -271,7 +271,8 @@ class CachedCatalogSourceSection(object):
             logger.info("MISS path: {0}".format(path))
 
         if item:
-            json.dump(item, open(cachefile, "w", encoding="utf-8"), indent=2)
+            with open(cachefile, "w", encoding="utf-8") as file:
+                json.dump(item, file, indent=2)
 
         self.debug_infos[item.get("_uid")] = {
             "id": item.get("_id"),

@@ -201,7 +201,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 try:
                     api.content.delete(obj=link, check_linkintegrity=False)
                 except KeyError:
-                    logger.error(
+                    logger.debug(
                         "Cannot remove {0}".format(link.absolute_url())
                     )
 

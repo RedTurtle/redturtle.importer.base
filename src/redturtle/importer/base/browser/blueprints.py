@@ -250,7 +250,7 @@ class WorkflowHistory(object):
                         }
                     )  # noqa
                 except Exception:
-                    logger.error(
+                    logger.debug(
                         u"Failed to copy history to the new"
                         u" workflow for {0}".format(item["_path"])
                     )
@@ -857,7 +857,7 @@ class PathManipulator(object):
                 if len(original_path) != len(template) and (
                     "*" not in template or "**" not in template
                 ):
-                    logger.error(
+                    logger.debug(
                         "The template and the length of the path is not the same nad there is no wildcards on it"
                     )  # noqa
                     yield item

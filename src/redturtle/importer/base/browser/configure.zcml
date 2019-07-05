@@ -20,7 +20,7 @@
   <transmogrifier:registerConfig
     name="redturtlePlone5Main"
     title="Migration configuration for querying the catalog of a Plone site"
-    configuration="redturtle.importer.base.browser.redturtleplone5.cfg"
+    configuration="redturtleplone5.cfg"
     />
 
   <include package="z3c.unconfigure" file="meta.zcml" />

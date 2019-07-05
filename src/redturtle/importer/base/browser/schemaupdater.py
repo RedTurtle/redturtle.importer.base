@@ -31,7 +31,6 @@ _marker = object()
 @implementer(ISection)
 @provider(ISectionBlueprint)
 class DexterityUpdateSection(object):
-
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
         self.transmogrifier.fixrelations = []
@@ -75,9 +74,7 @@ class DexterityUpdateSection(object):
                 yield item
                 continue
 
-            obj = self.context.unrestrictedTraverse(
-                path.lstrip("/"), None
-            )
+            obj = self.context.unrestrictedTraverse(path.lstrip("/"), None)
 
             # path doesn't exist
             if obj is None:

@@ -118,7 +118,7 @@ class DataFields(object):
             if path.startswith("/"):
                 path = path[1:]
             if (
-                "/".join(obj.getPhysicalPath()[self.root_path_length :])
+                "/".join(obj.getPhysicalPath()[self.root_path_length:])
                 != path
             ):
                 yield item
@@ -147,19 +147,8 @@ class DataFields(object):
                 #         obj.setFilename(item[key]['filename'])
                 #         obj.setContentType(item[key]['content_type'])
                 # else:
-                #     # We have a destination DX type
-                #     field = None
-                #     for schemata in iterSchemata(obj):
-                #         for name, s_field in getFieldsInOrder(schemata):
-                #             if name == fieldname:
-                #                 field = s_field
-                #                 deserializer = IDeserializer(field)
-                #                 value = deserializer(item[key], None, item)
-                #                 field.set(field.interface(obj), value)
-                #     if not field:
-                #         print('Can\'t find a suitable destination field '.format(fieldname))
-
                 # We have a destination DX type
+
                 field = None
                 for schemata in iterSchemata(obj):
                     for name, s_field in getFieldsInOrder(schemata):

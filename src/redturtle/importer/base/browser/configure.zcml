@@ -29,6 +29,7 @@
   <unconfigure>
     <adapter factory="transmogrify.dexterity.converters.DatetimeDeserializer" />
   </unconfigure>
+  <adapter factory=".overrides.DatetimeDeserializer" />
 
   <utility
       component=".blueprints.PrettyPrinter"

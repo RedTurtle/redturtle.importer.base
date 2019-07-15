@@ -129,7 +129,7 @@ class DataFields(object):
                 if not key.startswith(self.datafield_prefix):
                     continue
 
-                fieldname = key[len(self.datafield_prefix) :]
+                fieldname = key[len(self.datafield_prefix):]
 
                 # if IBaseObject.providedBy(obj):
 
@@ -328,8 +328,8 @@ class LocalRoles(object):
                         obj.manage_addLocalRoles(principal, roles)
                         try:
                             obj.reindexObjectSecurity()
-                        except:
-                            migration_error.error(
+                        except Exception:
+                            print(
                                 "Failed to reindexObjectSecurity {}".format(
                                     item["_path"]
                                 )
@@ -344,6 +344,7 @@ class LeftOvers(object):
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
+        self.transmogrifier.default_pages = []
         self.name = name
         self.options = options
         self.previous = previous
@@ -401,14 +402,22 @@ class LeftOvers(object):
                 # senza questo controllo da qui:
                 # parts/omelette/Products/CMFDynamicViewFTI/browserdefault.py
                 # obj.setDefaultPage(item['_defaultpage'])
-                try:
-                    obj.manage_addProperty(
-                        "default_page", item["_defaultpage"], "string"
-                    )
-                except Exception:
-                    pass
+                # try:
+                #     obj.manage_addProperty(
+                #         "default_page", item["_defaultpage"], "string"
+                #     )
+                # except Exception:
+                #     pass
 
-                obj.reindexObject(["is_default_page"])
+                # obj.reindexObject(["is_default_page"])
+
+                # Salviamo le pagine di default all'interno del trasmogrifier
+                # alla fine della migrazione le andiamo a recuperare e le
+                # assegnamo
+                defaultPage = {}
+                defaultPage["obj"] = obj.UID()
+                defaultPage["default_page"] = item["_defaultpage"]
+                self.transmogrifier.default_pages.append(defaultPage)
 
             # Local roles inherit
             if item.get("_local_roles_block", False):
@@ -423,7 +432,7 @@ class LeftOvers(object):
                             ref_path = (
                                 item["language"]
                                 + item["_atrefs"]["Collage_aliasedItem"][0][
-                                    item["_site_path_length"] :
+                                    item["_site_path_length"]:
                                 ]
                             )  # noqa
                             ref_obj = self.context.unrestrictedTraverse(
@@ -482,7 +491,6 @@ class Discussions(object):
     def __iter__(self):
         for item in self.previous:
             pathkey = self.pathkey(*list(item.keys()))[0]
-            typekey = self.comment_type_key(*list(item.keys()))[0]
             # item doesn't exist or the type of comment cannot be
             # created
             #            if not pathkey or not typekey:
@@ -606,7 +614,6 @@ class FieldsCorrector(object):
     def __iter__(self):
         for item in self.previous:
             pathkey = self.pathkey(*list(item.keys()))[0]
-            propertieskey = self.propertieskey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info
@@ -689,8 +696,7 @@ class PAMLinker(object):
                             None,
                         )  # noqa
                         if target_obj and (
-                            IBaseObject.providedBy(target_obj)
-                            or IDexterityContent.providedBy(target_obj)
+                            IDexterityContent.providedBy(target_obj)
                         ):  # noqa
                             lang_info.append((target_obj, lang))
                     try:
@@ -847,8 +853,9 @@ class PathManipulator(object):
                     "*" not in template or "**" not in template
                 ):
                     logger.debug(
-                        "The template and the length of the path is not the same nad there is no wildcards on it"
-                    )  # noqa
+                        "The template and the length of the path is not the"
+                        "same nad there is no wildcards on it"
+                    )
                     yield item
 
                 # One to one substitution, no wildcards
@@ -995,4 +1002,3 @@ class ContextFixes(object):
                 yield item
                 continue
             yield item
-

@@ -150,7 +150,6 @@ class CachedCatalogSourceSection(object):
                     # Enable logging
                     self.storage.append(item["_path"])
 
-                    # ptype = item.get('_type', False)
                     yield item
         self.save_debug_in_file()
 

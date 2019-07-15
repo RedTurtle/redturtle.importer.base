@@ -15,8 +15,6 @@ class DatetimeDeserializer(object):
     def __call__(
         self, value, filestore, item, disable_constraints=False, logger=None
     ):
-
-        import pdb; pdb.set_trace()
         if isinstance(value, datetime):
             value = value.date()
         if isinstance(value, basestring):

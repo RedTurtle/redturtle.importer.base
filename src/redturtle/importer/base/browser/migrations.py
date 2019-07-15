@@ -29,6 +29,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     Migration view
     """
 
+    transmogrifier = None
     transmogrifier_conf = "redturtlePlone5Main"
     skip_types_in_link_check = ["Discussion Item"]
 
@@ -38,26 +39,13 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
         return self.do_migrate()
 
-    def do_migrate(self, REQUEST=None):
-
-        authenticator = api.content.get_view(
-            context=api.portal.get(),
-            request=self.request,
-            name=u"authenticator",
-        )
-        if not authenticator.verify():
-            raise Unauthorized
-
-        self.cleanup_log_files()
-        portal = api.portal.get()
-        transmogrifier = Transmogrifier(portal)
-        transmogrifier(self.transmogrifier_conf)
-
+    def fix_relation(self):
         # nel transmogrifier c'e' una lista di tuple:
         # (path, fieldname, value) per le quali vanno rifatte le relations
+        logger.info("Fix Relations.")
         for (path, fieldname, value) in getattr(
-            transmogrifier, "fixrelations", []
-        ):  # noqa
+            self.transmogrifier, "fixrelations", []
+        ):
             logger.info("fix {0} {1} {2}".format(path, fieldname, value))
             obj = self.context.unrestrictedTraverse(path)
             for schemata in iterSchemata(obj):
@@ -76,6 +64,33 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                         field.set(field.interface(obj), value)
                         notify(ObjectModifiedEvent(obj))
 
+    def fix_defaultPages(self):
+        logger.info("Fix Default Pages.")
+        for item in getattr(self.transmogrifier, "default_pages", []):
+            try:
+                obj = api.content.get(UID=item["obj"])
+                obj.manage_addProperty(
+                    "default_page", item["default_page"], "string"
+                )
+                obj.reindexObject(["is_default_page"])
+            except Exception:
+                pass
+
+    def do_migrate(self, REQUEST=None):
+
+        authenticator = api.content.get_view(
+            context=api.portal.get(),
+            request=self.request,
+            name=u"authenticator",
+        )
+        if not authenticator.verify():
+            raise Unauthorized
+
+        self.cleanup_log_files()
+        portal = api.portal.get()
+        self.transmogrifier = Transmogrifier(portal)
+        self.transmogrifier(self.transmogrifier_conf)
+
         # run scripts after migration
         self.scripts_post_migration()
         logger.info("Migration done.")
@@ -89,6 +104,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         )
 
     def scripts_post_migration(self):
+        self.fix_relation()
+        self.fix_defaultPages()
         self.generate_broken_links_list()
         self.fix_link_noreference()
 

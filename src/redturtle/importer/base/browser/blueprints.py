@@ -367,7 +367,7 @@ class LeftOvers(object):
     def __iter__(self):
         for item in self.previous:
             pathkey = self.pathkey(*list(item.keys()))[0]
-            propertieskey = self.propertieskey(*list(item.keys()))[0]  # noqa
+            propertieskey = self.propertieskey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info

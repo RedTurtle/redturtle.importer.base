@@ -45,6 +45,8 @@ class CachedCatalogSourceSection(object):
         self.remote_username = self.get_option("remote-username", "admin")
         self.remote_password = self.get_option("remote-password", "admin")
 
+        self.default_local_path = self.get_option("default-local-path", "")
+
         catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
         self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
 
@@ -140,7 +142,10 @@ class CachedCatalogSourceSection(object):
                 item = self.get_remote_item(path)
 
                 if item:
-                    item["_path"] = item["_path"][self.site_path_length :]
+                    item["_path"] = (
+                        self.default_local_path
+                        + item["_path"][self.site_path_length :]
+                    )
                     item["_auth_info"] = (
                         self.remote_username,
                         self.remote_password,

@@ -29,7 +29,7 @@
   <unconfigure>
     <adapter factory="transmogrify.dexterity.converters.DatetimeDeserializer" />
   </unconfigure>
-  <adapter factory=".overrides.DatetimeDeserializer" />
+  <adapter factory=".converters.DatetimeDeserializer" />
 
   <utility
       component=".blueprints.PrettyPrinter"
@@ -45,7 +45,7 @@
       component=".blueprints.FieldsCorrector"
       name="redturtle.importer.base.sections.fieldscorrector"
       />
-    
+
   <utility
       component=".blueprints.LocalRoles"
       name="redturtle.importer.base.sections.localroles"
@@ -75,7 +75,7 @@
       component=".blueprints.Discussions"
       name="redturtle.importer.base.sections.discussions"
       />
-  
+
   <utility
       component=".blueprints.ContextFixes"
       name="redturtle.importer.base.sections.context_fixes"
@@ -120,4 +120,9 @@
     template="templates/migration_result.pt"
     permission="cmf.ManagePortal"
     />
+
+<adapter
+    provides=".converters.IFixedDeserializer"
+    factory = ".converters.FixedDeserializer"
+/>
 </configure>

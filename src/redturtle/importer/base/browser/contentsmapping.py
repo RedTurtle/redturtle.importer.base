@@ -91,7 +91,7 @@ class ContentsMappingSection(object):
                             if skip:
                                 break
                     else:
-                        logger.warn(
+                        logger.warning(
                             "Item {0} doesn't have father".format(
                                 item["_path"]
                             )
@@ -105,7 +105,7 @@ class ContentsMappingSection(object):
                 continue
 
             if not (typekey and pathkey):
-                logger.warn("Not enough info for item: {0}".format(item))
+                logger.warning("Not enough info for item: {0}".format(item))
                 yield item
                 continue
 

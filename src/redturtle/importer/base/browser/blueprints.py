@@ -18,7 +18,7 @@ from plone.app.discussion.interfaces import IConversation
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IUUID
-from transmogrify.dexterity.interfaces import IDeserializer
+from .converters import IFixedDeserializer
 
 # from Products.Archetypes.interfaces import IBaseObject
 from redturtle.importer.base import logger
@@ -118,7 +118,7 @@ class DataFields(object):
             if path.startswith("/"):
                 path = path[1:]
             if (
-                "/".join(obj.getPhysicalPath()[self.root_path_length:])
+                "/".join(obj.getPhysicalPath()[self.root_path_length :])
                 != path
             ):
                 yield item
@@ -129,7 +129,7 @@ class DataFields(object):
                 if not key.startswith(self.datafield_prefix):
                     continue
 
-                fieldname = key[len(self.datafield_prefix):]
+                fieldname = key[len(self.datafield_prefix) :]
 
                 # if IBaseObject.providedBy(obj):
 
@@ -154,7 +154,7 @@ class DataFields(object):
                     for name, s_field in getFieldsInOrder(schemata):
                         if name == fieldname:
                             field = s_field
-                            deserializer = IDeserializer(field)
+                            deserializer = IFixedDeserializer(field)
                             value = deserializer(item[key], None, item)
                             field.set(field.interface(obj), value)
                 if not field:
@@ -215,9 +215,7 @@ class WorkflowHistory(object):
                 yield item
                 continue
 
-            if IDexterityContent.providedBy(
-                obj
-            ):
+            if IDexterityContent.providedBy(obj):
                 item_tmp = deepcopy(item)
                 wf_list = self.wftool.getWorkflowsFor(obj)
                 if not wf_list:
@@ -432,7 +430,7 @@ class LeftOvers(object):
                             ref_path = (
                                 item["language"]
                                 + item["_atrefs"]["Collage_aliasedItem"][0][
-                                    item["_site_path_length"]:
+                                    item["_site_path_length"] :
                                 ]
                             )  # noqa
                             ref_obj = self.context.unrestrictedTraverse(
@@ -723,7 +721,6 @@ class PAMLinker(object):
 @implementer(ISection)
 @provider(ISectionBlueprint)
 class OrderSection(object):
-
     def __init__(self, transmogrifier, name, options, previous):
         self.every = int(options.get("every", 1000))
         self.previous = previous
@@ -958,7 +955,6 @@ class CioppinoTwoThumbsRatings(object):
 @implementer(ISection)
 @provider(ISectionBlueprint)
 class CommitSection(object):
-
     def __init__(self, transmogrifier, name, options, previous):
         self.every = int(options.get("every", 1000))
         self.previous = previous

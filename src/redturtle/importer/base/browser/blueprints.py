@@ -19,6 +19,7 @@ from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IUUID
 from transmogrify.dexterity.interfaces import IDeserializer
+from .overrides import IFixedDeserializer
 
 # from Products.Archetypes.interfaces import IBaseObject
 from redturtle.importer.base import logger
@@ -154,7 +155,9 @@ class DataFields(object):
                     for name, s_field in getFieldsInOrder(schemata):
                         if name == fieldname:
                             field = s_field
-                            deserializer = IDeserializer(field)
+                            import pdb
+                            pdb.set_trace()
+                            deserializer = IFixedDeserializer(field)
                             value = deserializer(item[key], None, item)
                             field.set(field.interface(obj), value)
                 if not field:

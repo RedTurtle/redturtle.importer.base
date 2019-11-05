@@ -120,4 +120,9 @@
     template="templates/migration_result.pt"
     permission="cmf.ManagePortal"
     />
+
+<adapter  
+    provides=".overrides.IFixedDeserializer"
+    factory = ".overrides.FixedDeserializer"
+/>
 </configure>

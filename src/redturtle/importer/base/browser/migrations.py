@@ -46,8 +46,17 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         for (path, fieldname, value) in getattr(
             self.transmogrifier, "fixrelations", []
         ):
+            if not value:
+                continue
+            obj = api.content.get(path)
+            if not obj:
+                logger.warning(
+                    '[FIX RELATIONS] - Unable to find {path}. No relations fixed.'.format(  # noqa
+                        path=path
+                    )
+                )
+                continue
             logger.info("fix {0} {1} {2}".format(path, fieldname, value))
-            obj = self.context.unrestrictedTraverse(path)
             for schemata in iterSchemata(obj):
                 for name, field in getFieldsInOrder(schemata):
                     if name == fieldname:

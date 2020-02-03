@@ -1,22 +1,18 @@
-.. This README is meant for consumption by humans and pypi. Pypi can render rst files so please do not use Sphinx features.
-   If you want to learn more about writing documentation, please check out: http://docs.plone.org/about/documentation_styleguide.html
-   This text does not appear on pypi or github. It is a comment.
+=======================
+RedTurtle importer base
+=======================
 
-==================
-RedTurtle importer
-==================
-
-A content-type importer from a source site
+Tool to migrate contents between Plone sites based on transmogrifier.
 
 Dependencies
 ============
 
 This product is made over other useful tools:
 
-* `ploneorg.migration`__
+* `collective.jsonmigrator`__
 * `transmigrify.dexterity`__
 
-__ https://github.com/collective/ploneorg.migration
+__ https://github.com/collective/collective.jsonmigrator
 __ https://github.com/collective/transmogrify.dexterity
 
 Features
@@ -24,9 +20,9 @@ Features
 
 - Handle migration for basic content-types
 - Discussions migration
-- Customizable export procedure via blueprints
+- Customizable import procedure via blueprints
 - Extensible with more specific blueprints
-- Possibility to customize specific step options with custom cfg file
+- Possibility to customize specific step options with custom adapters
 - Review view after migration with process results
 
 Installation
@@ -54,29 +50,27 @@ Usage
 Migration view
 --------------
 To start a migration, you only need to call `@@data-migration` view on site root.
-In this view you can see which parameters are customized (via cfg file), and start the process.
 
-Customize steps parameters
---------------------------
+In this view you can see the blueprint configuration (base and overrided), and start the process.
+
+Pipelines customization
+-----------------------
 
 This tool is based on transmogrifier and works with blueprints.
 A blueprint is basically a config file that lists all the steps needed for the migration.
 
-This product has a default blueprint for basic migrations, that can be used as is.
-You could also use different blueprints in custom packages (see above).
+This product has a `default blueprint`__ for basic migrations, that can be used as is.
 
-Each step could be configured with a different set of parameters. You could override standard ones with a config file in buildout's root.
+Default blueprint can be easily customized using a `.migrationconfig.cfg` file located in buildout root folder.
 
-That file should be called `.migrationconfig.cfg` and could have different sections (one per step).
+In this file you can override already present parts/variables (like `pipelines` into `[transmogrifier]` section) or 
+add new ones (for example a new step).
 
 For example, catalogsource step can be configured with some queries like this::
 
     [catalogsource]
     catalog-query = {'portal_type': ['Document', 'Event', 'News Item']}
     ...
-
-Source site access
-------------------
 
 In `.migrationconfig.cfg` file, under `[catalogsource]` section, you also need to set some settings about how to retrieve data on source site::
 
@@ -88,6 +82,12 @@ In `.migrationconfig.cfg` file, under `[catalogsource]` section, you also need t
     remote-username = username
     remote-password = password
     ...
+
+
+Before running a migration, you can check the final configuration in `@@data-migration` view.
+
+
+__ https://github.com/RedTurtle/redturtle.importer.base/blob/python3/src/redturtle/importer/base/transmogrifier/redturtleplone5.cfg
 
 
 Custom steps for specific portal types
@@ -108,7 +108,7 @@ And then you need to provide a "doSteps" method in the class::
 
     from redturtle.importer.base.interfaces import IMigrationContextSteps
     from zope.interface import implementer
-    
+
     @implementer(IMigrationContextSteps)
     class MyTypeSteps(object):
 
@@ -119,6 +119,20 @@ And then you need to provide a "doSteps" method in the class::
             """
             do something here
             """
+
+Example specific importers
+==========================
+
+There are some per-project importers that we used to migrate some projects and you can use them as a starting point
+to develop new ones.
+
+They are basically packages that you need to include in your buildout and provides some custom steps for specific types:
+
+- `redturtle.importer.rer`__
+- `redturtle.importer.volto`__
+
+__ https://github.com/RedTurtle/redturtle.importer.rer
+__ https://github.com/RedTurtle/redturtle.importer.volto
 
 
 Custom steps and mappings

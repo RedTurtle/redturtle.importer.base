@@ -3,7 +3,6 @@ from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from datetime import datetime
 from plone import api
-from redturtle.importer.base.utils import get_additional_config
 from zope.interface import provider
 from zope.interface import implementer
 from zope.annotation.interfaces import IAnnotations
@@ -31,10 +30,8 @@ logger = logging.getLogger(__name__)
 @provider(ISectionBlueprint)
 class CachedCatalogSourceSection(object):
     def __init__(self, transmogrifier, name, options, previous):
-        # read additional config in cfg file, and apply to default
-        additional_config = get_additional_config("catalogsource")
         self.debug_infos = {}
-        options.update(additional_config)
+        # options.update(additional_config)
         self.previous = previous
         self.options = options
         self.context = transmogrifier.context
@@ -47,7 +44,7 @@ class CachedCatalogSourceSection(object):
 
         self.default_local_path = self.get_option("default-local-path", "")
 
-        catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
+        catalog_path = self.get_option("catalog-path", "/aaa/portal_catalog")
         self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
 
         catalog_query = self.get_option("catalog-query", None)

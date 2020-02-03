@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 from AccessControl import Unauthorized
 from Acquisition import aq_base
 from collective.transmogrifier.transmogrifier import Transmogrifier
@@ -8,20 +7,21 @@ from plone import api
 from plone.app.textfield import RichText
 from plone.app.uuid.utils import uuidToObject
 from plone.dexterity.utils import iterSchemata
+from plone.memoize.view import memoize
 from plone.outputfilters.filters.resolveuid_and_caption import resolveuid_re
 from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
 from redturtle.importer.base.utils import get_additional_config
-from redturtle.importer.base.utils import get_base_config
-from transmogrify.dexterity.interfaces import IDeserializer
+from redturtle.importer.base.utils import get_transmogrifier_configuration
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
 
-import errno
 import json
-import os
 import six
+
+# import errno
+# import os
 
 
 class RedTurtlePlone5MigrationMain(BrowserView):
@@ -95,10 +95,13 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         if not authenticator.verify():
             raise Unauthorized
 
-        self.cleanup_log_files()
         portal = api.portal.get()
         self.transmogrifier = Transmogrifier(portal)
-        self.transmogrifier(self.transmogrifier_conf)
+        # self.cleanup_log_files()
+        self.transmogrifier(
+            configuration_id=self.transmogrifier_conf,
+            **get_additional_config()
+        )
 
         # run scripts after migration
         self.scripts_post_migration()
@@ -118,29 +121,29 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.generate_broken_links_list()
         self.fix_link_noreference()
 
-    def cleanup_log_files(self):
-        for type, section in [("in", "catalogsource"), ("out", "results")]:
-            additional_config = get_additional_config(section=section)
-            config = get_base_config(section=section)
-            config.update(additional_config)
-            file_name = config.get(
-                "file-name-{0}".format(type),
-                "migration_content_{0}.json".format(type),
-            )
-            file_path = "{0}/{1}_{2}".format(
-                config.get("migration-dir"),
-                api.portal.get().getId(),
-                file_name,
-            )
-            try:
-                os.remove(file_path)
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    # re-raise exception if a different error occurred
-                    raise
+    # def cleanup_log_files(self):
+    #     for type, section in [("in", "catalogsource"), ("out", "results")]:
+    #         additional_config = get_additional_config(section=section)
+    #         config = get_base_config(section=section)
+    #         config.update(additional_config)
+    #         file_name = config.get(
+    #             "file-name-{0}".format(type),
+    #             "migration_content_{0}.json".format(type),
+    #         )
+    #         file_path = "{0}/{1}_{2}".format(
+    #             config.get("migration-dir"),
+    #             api.portal.get().getId(),
+    #             file_name,
+    #         )
+    #         try:
+    #             os.remove(file_path)
+    #         except OSError as e:
+    #             if e.errno != errno.ENOENT:
+    #                 # re-raise exception if a different error occurred
+    #                 raise
 
     def get_config(self):
-        return get_additional_config(all=True)
+        return get_transmogrifier_configuration()
 
     def generate_broken_links_list(self):
         logger.info("Generating broken tinymce internal links.")
@@ -176,21 +179,26 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.write_broken_links(broken_urls)
 
     def write_broken_links(self, paths):
-        additional_config = get_additional_config(section="results")
-        config = get_base_config(section="results")
-        config.update(additional_config)
-        file_name = config.get("broken-links-tiny")
-        file_path = "{0}/{1}_{2}".format(
-            config.get("migration-dir"), api.portal.get().getId(), file_name
+        section = self.transmogrifier.get('results')
+        if section is None:
+            logger.warning(
+                '"results" section not found in transmogrifier configuration.'
+                ' Unable to write broken links file.'
+            )
+            return
+        file_name = section.get("broken-links-tiny")
+        file_path = "{dir}/{portal_id}_{file_name}".format(
+            dir=section.get("migration-dir"),
+            portal_id=api.portal.get().getId(),
+            file_name=file_name,
         )
         with open(file_path, "w") as fp:
             json.dump(paths, fp)
 
     def check_link_exist(self, link, link_path):
         result = True
-        remote_site = get_additional_config(section="catalogsource")[
-            "remote-root"
-        ]
+        section = self.transmogrifier.get('catalogsource')
+        remote_site = section.get('remote-root')
         try:
             if remote_site not in link_path:
                 return True
@@ -234,14 +242,14 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.write_noreference_links(noreference_urls)
 
     def write_noreference_links(self, paths):
-        additional_config = get_additional_config(section="results")
-        config = get_base_config(section="results")
-        config.update(additional_config)
-        file_name = config.get("noreference-links")
-        file_path = "{0}/{1}_{2}".format(
-            config.get("migration-dir"), api.portal.get().getId(), file_name
+        section = self.transmogrifier.get('results')
+        file_name = section.get('noreference-links')
+        file_path = '{dir}/{portal_id}_{file_name}'.format(
+            dir=section.get('migration-dir'),
+            portal_id=api.portal.get().getId(),
+            file_name=file_name,
         )
-        with open(file_path, "w") as fp:
+        with open(file_path, 'w') as fp:
             json.dump(paths, fp)
 
 
@@ -250,9 +258,15 @@ class MigrationResults(BrowserView):
     read debug files and expose statistics
     """
 
+    @property
+    @memoize
+    def transmogrifier_conf(self):
+        return get_transmogrifier_configuration()
+
     def get_results(self):
-        in_json = self.get_json_data(type="in", section="catalogsource")
-        out_json = self.get_json_data(type="out", section="results")
+
+        in_json = self.get_json_data(type="in", section_id="catalogsource")
+        out_json = self.get_json_data(type="out", section_id="results")
 
         results = {
             "in_count": len(list(in_json.keys())),
@@ -270,38 +284,41 @@ class MigrationResults(BrowserView):
 
         return results
 
-    def get_json_data(self, type, section):
-        additional_config = get_additional_config(section=section)
-        config = get_base_config(section=section)
-        config.update(additional_config)
-        file_name = config.get(
-            "file-name-{0}".format(type),
-            "migration_content_{0}.json".format(type),
+    def get_json_data(self, type, section_id):
+        config = self.transmogrifier_conf
+        section = config.get(section_id, None)
+        file_name = section.get(
+            'file-name-{0}'.format(type),
+            'migration_content_{0}.json'.format(type),
         )
-        file_path = "{0}/{1}_{2}".format(
-            config.get("migration-dir"), api.portal.get().getId(), file_name
+        file_path = '{dir}/{portal_id}_{file_name}'.format(
+            dir=section.get('migration-dir'),
+            portal_id=api.portal.get().getId(),
+            file_name=file_name,
         )
-        with open(file_path, "r") as fp:
+        with open(file_path, 'r') as fp:
             return json.loads(fp.read())
 
     def get_broken_links(self):
-        additional_config = get_additional_config(section="results")
-        config = get_base_config(section="results")
-        config.update(additional_config)
-        file_name = config.get("broken-links-tiny")
-        file_path = "{0}/{1}_{2}".format(
-            config.get("migration-dir"), api.portal.get().getId(), file_name
+        config = self.transmogrifier_conf
+        section = config.get('results', None)
+        file_name = section.get('broken-links-tiny')
+        file_path = '{dir}/{portal_id}_{file_name}'.format(
+            dir=section.get('migration-dir'),
+            portal_id=api.portal.get().getId(),
+            file_name=file_name,
         )
-        with open(file_path, "r") as fp:
+        with open(file_path, 'r') as fp:
             return json.loads(fp.read())
 
     def get_noreference_links(self):
-        additional_config = get_additional_config(section="results")
-        config = get_base_config(section="results")
-        config.update(additional_config)
-        file_name = config.get("noreference-links")
-        file_path = "{0}/{1}_{2}".format(
-            config.get("migration-dir"), api.portal.get().getId(), file_name
+        config = self.transmogrifier_conf
+        section = config.get('results', None)
+        file_name = section.get('noreference-links')
+        file_path = '{dir}/{portal_id}_{file_name}'.format(
+            dir=section.get('migration-dir'),
+            portal_id=api.portal.get().getId(),
+            file_name=file_name,
         )
-        with open(file_path, "r") as fp:
+        with open(file_path, 'r') as fp:
             return json.loads(fp.read())

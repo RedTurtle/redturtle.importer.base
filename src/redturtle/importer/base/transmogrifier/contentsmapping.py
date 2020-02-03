@@ -5,7 +5,6 @@ from collective.transmogrifier.utils import defaultKeys
 from collective.transmogrifier.utils import defaultMatcher
 from collective.transmogrifier.utils import Matcher
 from redturtle.importer.base import logger
-from redturtle.importer.base.utils import get_additional_config
 from zope.interface import provider
 from zope.interface import implementer
 
@@ -17,9 +16,7 @@ import ast
 class ContentsMappingSection(object):
     def __init__(self, transmogrifier, name, options, previous):
         # read additional config in cfg file, and apply to default
-        additional_config = get_additional_config("contentsmapping")
         self.debug_infos = {}
-        options.update(additional_config)
 
         self.transmogrifier = transmogrifier
         self.name = name

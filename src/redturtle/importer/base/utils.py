@@ -2,6 +2,8 @@
 from collective.transmogrifier.transmogrifier import configuration_registry
 from six.moves.configparser import RawConfigParser
 
+import os
+
 
 def get_transmogrifier_configuration():
     base_config_path = configuration_registry.getConfiguration(
@@ -22,7 +24,10 @@ def get_transmogrifier_configuration():
 
 def get_additional_config(section="", all=False):
     config = RawConfigParser()
-    with open(".migrationconfig.cfg") as fp:
+    path = os.environ.get('MIGRATION_FILE_PATH', '')
+    if not path:
+        path = ".migrationconfig.cfg"
+    with open(path) as fp:
         config.readfp(fp)
     result = {}
     for section in config.sections():

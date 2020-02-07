@@ -16,7 +16,6 @@ import posixpath
 @implementer(ISection)
 @provider(ISectionBlueprint)
 class ConstructorSection(BaseConstructorSection):
-
     def __init__(self, transmogrifier, name, options, previous):
         super(ConstructorSection, self).__init__(
             transmogrifier, name, options, previous

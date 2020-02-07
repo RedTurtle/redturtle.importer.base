@@ -57,7 +57,7 @@ class CachedCatalogSourceSection(object):
         self.remote_root = self.get_option("remote-root", "")
 
         # next is for communication with 'logger' section
-        self.anno = IAnnotations(transmogrifier)
+        self.anno = IAnnotations(self.context.REQUEST)
         self.storage = self.anno.setdefault(VALIDATIONKEY, [])
         self.errored = self.anno.setdefault(ERROREDKEY, [])
         self.item_count = self.anno.setdefault(COUNTKEY, {})

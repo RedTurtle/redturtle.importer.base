@@ -16,7 +16,6 @@ COUNTKEY = "redturtle.importer.base.count"
 @implementer(ISection)
 @provider(ISectionBlueprint)
 class LoggerSection(object):
-
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
         keys = options.get("keys") or ""
@@ -24,11 +23,17 @@ class LoggerSection(object):
         self.keys = Matcher(*keys.splitlines())
         self.previous = previous
         self.logger = name
-        self.storage = IAnnotations(transmogrifier).setdefault(
+        from plone import api
+
+        self.storage = IAnnotations(api.portal.get().REQUEST).setdefault(
             VALIDATIONKEY, []
         )
-        self.errored = IAnnotations(transmogrifier).setdefault(ERROREDKEY, [])
-        self.count = IAnnotations(transmogrifier).setdefault(COUNTKEY, {})
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
+            ERROREDKEY, []
+        )
+        self.count = IAnnotations(api.portal.get().REQUEST).setdefault(
+            COUNTKEY, {}
+        )
 
     def __iter__(self):
         start_time = time()

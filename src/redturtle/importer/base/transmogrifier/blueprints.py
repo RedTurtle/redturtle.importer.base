@@ -993,8 +993,9 @@ class ContextFixes(object):
             try:
                 provider = IMigrationContextSteps(obj)
                 provider.doSteps(item)
-            except TypeError:
+            except TypeError as e:
                 # adapter not provided
+                logger.exception(e)
                 yield item
                 continue
             yield item

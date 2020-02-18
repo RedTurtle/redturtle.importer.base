@@ -28,8 +28,8 @@ before_install:
 install:
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True annotate
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True
-  - docker run -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e PLONE_DEVELOP="src/redturtle.exporter.base" -v $(pwd)/src:/plone/instance/src plone:4.3
-  - sleep 60
+  - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e PLONE_DEVELOP="src/redturtle.exporter.base" -v $(pwd)/src:/plone/instance/src plone:4.3
+  - sleep 90
 
 script:
   # Run code-analysis, except on Python 3.6, which mysteriously fails to find zc.buildout.

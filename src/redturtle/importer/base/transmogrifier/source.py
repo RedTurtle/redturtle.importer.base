@@ -83,7 +83,7 @@ class CachedCatalogSourceSection(object):
             self.item_paths = resp.json()
         except Exception as e:
             logger.error('CODE: {}'.format(resp.status_code))
-            raise (e)
+            raise (Exception(resp.status_code))
         self.item_count["total"] = len(self.item_paths)
         self.item_count["remaining"] = len(self.item_paths)
 

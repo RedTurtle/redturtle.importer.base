@@ -30,6 +30,8 @@ install:
   - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e PLONE_DEVELOP="src/redturtle.exporter.base" -v $(pwd)/src:/plone/instance/src plone:4.3
   - sleep 90
   - docker ps -a
+  - sleep 60
+  - docker ps -a
 
 script:
   # Run code-analysis, except on Python 3.6, which mysteriously fails to find zc.buildout.

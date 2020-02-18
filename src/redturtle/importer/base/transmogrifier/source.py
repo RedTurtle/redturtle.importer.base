@@ -79,7 +79,10 @@ class CachedCatalogSourceSection(object):
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
-        self.item_paths = resp.json()
+        try:
+            self.item_paths = resp.json()
+        except Exception:
+            logger.error('CODE: {}'.format(resp.status_code))
         self.item_count["total"] = len(self.item_paths)
         self.item_count["remaining"] = len(self.item_paths)
 

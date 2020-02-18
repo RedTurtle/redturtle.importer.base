@@ -20,8 +20,6 @@ matrix:
 
 before_install:
   - docker pull plone:4.3
-  - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e PLONE_DEVELOP="src/redturtle.exporter.base" -v $(pwd)/src:/plone/instance/src plone:4.3
-  - sleep 30
   - docker ps -a
   - virtualenv -p `which python` .
   - bin/pip install -r requirements.txt -c constraints_plone$PLONE_VERSION.txt
@@ -30,6 +28,8 @@ before_install:
 install:
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True annotate
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True
+  - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e PLONE_DEVELOP="src/redturtle.exporter.base" -v $(pwd)/src:/plone/instance/src plone:4.3
+  - sleep 30
 
 script:
   # Run code-analysis, except on Python 3.6, which mysteriously fails to find zc.buildout.

@@ -25,9 +25,9 @@ before_install:
   - cp test_plone$PLONE_VERSION.cfg buildout.cfg
 
 install:
+  - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e VERSIONS="redturtle.exporter.base=1.0.2" plone:4.3
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True annotate
   - bin/buildout -N -t 3 code-analysis:return-status-codes=True
-  - docker run -d -p 127.0.0.1:8085:8080 -e SITE="Plone" -e PLONE_ADDONS="redturtle.exporter.base" -e VERSIONS="redturtle.exporter.base=1.0.2" plone:4.3
   - sleep 90
   - docker ps -a
   - sleep 60

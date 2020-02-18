@@ -158,7 +158,7 @@ class DataFields(object):
                             value = deserializer(item[key], None, item)
                             field.set(field.interface(obj), value)
                 if not field:
-                    print(
+                    logger.warning(
                         "Can't find a suitable destination field ".format(
                             fieldname
                         )
@@ -327,7 +327,7 @@ class LocalRoles(object):
                         try:
                             obj.reindexObjectSecurity()
                         except Exception:
-                            print(
+                            logger.warning(
                                 "Failed to reindexObjectSecurity {}".format(
                                     item["_path"]
                                 )
@@ -365,7 +365,7 @@ class LeftOvers(object):
     def __iter__(self):
         for item in self.previous:
             pathkey = self.pathkey(*list(item.keys()))[0]
-            propertieskey = self.propertieskey(*list(item.keys()))[0]
+            # propertieskey = self.propertieskey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info
@@ -518,7 +518,7 @@ class Discussions(object):
                     try:
                         del conversation[value]
                     except Exception:
-                        print(
+                        logger.warning(
                             "WARNING: Discussion with id {0} not found".format(  # noqa
                                 value
                             )
@@ -571,7 +571,7 @@ class Discussions(object):
                     {comment.get("comment_id"): int(new_comment.comment_id)}
                 )
 
-                print(
+                logger.info(
                     (
                         "Added comment with id {0} to item {1}".format(
                             new_comment.comment_id, obj.absolute_url()
@@ -995,7 +995,6 @@ class ContextFixes(object):
                 provider.doSteps(item)
             except TypeError as e:
                 # adapter not provided
-                logger.exception(e)
                 yield item
                 continue
             yield item

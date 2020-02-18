@@ -5,10 +5,13 @@ from collective.transmogrifier.utils import defaultKeys
 from collective.transmogrifier.utils import defaultMatcher
 from collective.transmogrifier.utils import Matcher
 from redturtle.importer.base import logger
+from zope.annotation.interfaces import IAnnotations
 from zope.interface import provider
 from zope.interface import implementer
 
 import ast
+
+ITEMS_IN = "redturtle.importer.base.items_in"
 
 
 @implementer(ISection)
@@ -39,13 +42,16 @@ class ContentsMappingSection(object):
                 options.get("exclude-type", None)
             )
 
+        annotations = IAnnotations(self.context.REQUEST)
+        self.items_in = annotations.setdefault(ITEMS_IN, {})
+
     def collection_mapping(self, item):
         mapping = {
             "portal_type": "plone.app.querystring.operation.selection.any",
             "review_state": "plone.app.querystring.operation.selection.any",
         }
-
         query = item["query"]
+
         for criteria in query:
             # Fix query string opertaion
             proper_operation = mapping.get(criteria.get("i"))
@@ -99,6 +105,17 @@ class ContentsMappingSection(object):
                             skip = True
 
             if skip:
+                if item.get("_uid") in self.items_in:
+                    self.items_in[item.get("_uid")][
+                        'reason'
+                    ] = 'Skipped portal_type'
+                else:
+                    self.items_in[item.get("_uid")] = {
+                        "id": item.get("_id"),
+                        "portal_type": item.get("_type"),
+                        "title": item.get("title"),
+                        "path": item.get("_path"),
+                    }
                 continue
 
             if not (typekey and pathkey):

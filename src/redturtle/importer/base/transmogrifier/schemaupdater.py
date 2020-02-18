@@ -60,7 +60,8 @@ class DexterityUpdateSection(object):
 
         self.errored = IAnnotations(transmogrifier).setdefault(ERROREDKEY, [])
 
-    def __iter__(self):
+    def __iter__(self):  #  noqa
+        # need to be refactored
         for item in self.previous:
             pathkey = self.pathkey(*list(item.keys()))[0]
             # not enough info
@@ -100,7 +101,6 @@ class DexterityUpdateSection(object):
                             continue
                         if field.readonly:
                             continue
-
                         # setting value from the blueprint cue
                         value = item.get(name, _marker)
                         if value is not _marker:
@@ -171,8 +171,5 @@ class DexterityUpdateSection(object):
                             except AttributeError:
                                 pass
                         field.set(field.interface(obj), default)
-                try:
-                    notify(ObjectModifiedEvent(obj))
-                except Exception:
-                    print("Error probably in linkintegrity transform")
+                notify(ObjectModifiedEvent(obj))
             yield item

@@ -2,7 +2,11 @@
 from collective.transmogrifier.transmogrifier import configuration_registry
 from six.moves.configparser import RawConfigParser
 
+import logging
 import os
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_transmogrifier_configuration():
@@ -27,6 +31,13 @@ def get_additional_config(section="", all=False):
     path = os.environ.get('MIGRATION_FILE_PATH', '')
     if not path:
         path = ".migrationconfig.cfg"
+    if not os.path.isfile(path):
+        logger.warning(
+            'Unable to find additional config file: "{}". We are skipping it and using default config.'.format(  # noqa
+                path
+            )
+        )
+        return {}
     with open(path) as fp:
         config.readfp(fp)
     result = {}

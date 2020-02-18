@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from DateTime import DateTime
 from datetime import datetime
 from zope.schema.interfaces import IDatetime
 from plone.app.event.base import default_timezone
@@ -7,7 +9,9 @@ from zope.interface import implementer
 from zope.component import adapter
 
 import base64
+import dateutil.parser
 import requests
+import six
 
 
 @implementer(IDeserializer)
@@ -19,22 +23,23 @@ class DatetimeDeserializer(object):
     def __call__(
         self, value, filestore, item, disable_constraints=False, logger=None
     ):
+        if value == 'None':
+            return None
         if isinstance(value, datetime):
             value = value.date()
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             # Fix some rare use case
             if "Universal" in value:
                 value = value.replace("Universal", "UTC")
-
             try:
-                value = datetime.strptime(value, "%Y-%m-%d %H:%M")
-            except Exception:
-                value = datetime.now()
-
-            # Fix timezone
-            tz_default = default_timezone(as_tzinfo=True)
-            if value.tzinfo is None:
-                value = tz_default.localize(value)
+                value = dateutil.parser.isoparse(value)
+                # Fix timezone
+                tz_default = default_timezone(as_tzinfo=True)
+                if value.tzinfo is None:
+                    value = tz_default.localize(value)
+                value = value.astimezone(tz_default)
+            except ValueError:
+                value = DateTime(value)
         try:
             self.field.validate(value)
         except Exception as e:

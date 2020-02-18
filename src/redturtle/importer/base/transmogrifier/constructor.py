@@ -46,13 +46,6 @@ class ConstructorSection(BaseConstructorSection):
 
             fti = self.ttool.getTypeInfo(type_)
             if fti is None:
-                logger.warn(
-                    "Not an existing type, converted into Folder: {0}".format(
-                        type_
-                    )
-                )
-                # manca il content type
-                # fti = self.ttool.getTypeInfo('Folder')
                 raise Exception("Missing {0} content type".format(type_))
 
             container, id = posixpath.split(path.strip("/"))

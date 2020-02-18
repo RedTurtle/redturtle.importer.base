@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from AccessControl import Unauthorized
 from Acquisition import aq_base
 from collective.transmogrifier.transmogrifier import Transmogrifier
@@ -13,6 +14,7 @@ from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
 from redturtle.importer.base.utils import get_additional_config
 from redturtle.importer.base.utils import get_transmogrifier_configuration
+from transmogrify.dexterity.interfaces import IDeserializer
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
@@ -165,7 +167,11 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                     raw_text = item_field.raw
                     if not raw_text:
                         continue
-                    xml = etree.HTML(raw_text)
+                    try:
+                        xml = etree.HTML(raw_text)
+                    except ValueError:
+                        # text is not html (probably an svg)
+                        continue
                     for link in xml.xpath("//a"):
                         match = resolveuid_re.match(link.get("href", ""))
                         if not match:
@@ -217,7 +223,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         noreference_urls = []
         portal_id = api.portal.get().getId()
         brains = api.content.find(portal_type="Link")
-        print("Found {0} items.".format(len(brains)))
+        logger.info("Found {0} items.".format(len(brains)))
 
         for brain in brains:
             remote_url = brain.getRemoteUrl
@@ -265,8 +271,12 @@ class MigrationResults(BrowserView):
 
     def get_results(self):
 
-        in_json = self.get_json_data(type="in", section_id="catalogsource")
-        out_json = self.get_json_data(type="out", section_id="results")
+        in_json = self.get_json_data(
+            option='file-name-in', section_id="catalogsource"
+        )
+        out_json = self.get_json_data(
+            option='file-name-out', section_id="results"
+        )
 
         results = {
             "in_count": len(list(in_json.keys())),
@@ -279,18 +289,26 @@ class MigrationResults(BrowserView):
             results["same_results"] = True
         else:
             results["same_results"] = False
-            diff_keys = set(in_json.keys()) - set(out_json.keys())
-            results["not_migrated"] = [in_json[k] for k in diff_keys]
+            results["not_migrated"] = self.generate_not_migrated_list(
+                in_json=in_json, out_json=out_json
+            )
 
         return results
 
-    def get_json_data(self, type, section_id):
+    def generate_not_migrated_list(self, in_json, out_json):
+        diff_keys = set(in_json.keys()) - set(out_json.keys())
+        return [in_json[k] for k in diff_keys]
+        # results.extend(
+        #     self.get_json_data(option="errors_log", section_id="results")
+        # )
+        # return results
+
+    def get_json_data(self, option, section_id):
         config = self.transmogrifier_conf
         section = config.get(section_id, None)
-        file_name = section.get(
-            'file-name-{0}'.format(type),
-            'migration_content_{0}.json'.format(type),
-        )
+        file_name = section.get(option, '')
+        if not file_name:
+            return []
         file_path = '{dir}/{portal_id}_{file_name}'.format(
             dir=section.get('migration-dir'),
             portal_id=api.portal.get().getId(),

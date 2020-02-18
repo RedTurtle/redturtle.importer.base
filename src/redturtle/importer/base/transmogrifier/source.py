@@ -22,6 +22,7 @@ import six.moves.urllib.error
 VALIDATIONKEY = "redturtle.importer.base.logger"
 ERROREDKEY = "redturtle.importer.base.errors"
 COUNTKEY = "redturtle.importer.base.count"
+ITEMS_IN = "redturtle.importer.base.items_in"
 
 logger = logging.getLogger(__name__)
 
@@ -37,33 +38,38 @@ class CachedCatalogSourceSection(object):
         self.context = transmogrifier.context
 
         self.remote_url = self.get_option(
-            "remote-url", "http://localhost:8080"
+            "remote-url", "http://localhost:8085"
         )
         self.remote_username = self.get_option("remote-username", "admin")
         self.remote_password = self.get_option("remote-password", "admin")
 
         self.default_local_path = self.get_option("default-local-path", "")
 
-        catalog_path = self.get_option("catalog-path", "/aaa/portal_catalog")
+        catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
         self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
-
-        catalog_query = self.get_option("catalog-query", None)
-        catalog_query = " ".join(catalog_query.split())
-        catalog_query = base64.b64encode(catalog_query.encode("utf-8"))
 
         self.remote_skip_paths = self.get_option(
             "remote-skip-paths", ""
         ).split()
+        self.skip_private = json.loads(
+            self.get_option("skip-private", "False").lower()
+        )
         self.remote_root = self.get_option("remote-root", "")
 
         # next is for communication with 'logger' section
-        self.anno = IAnnotations(self.context.REQUEST)
-        self.storage = self.anno.setdefault(VALIDATIONKEY, [])
-        self.errored = self.anno.setdefault(ERROREDKEY, [])
-        self.item_count = self.anno.setdefault(COUNTKEY, {})
+        self.annotations = IAnnotations(self.context.REQUEST)
+        self.storage = self.annotations.setdefault(VALIDATIONKEY, [])
+        self.errored = self.annotations.setdefault(ERROREDKEY, [])
+        self.item_count = self.annotations.setdefault(COUNTKEY, {})
+        self.items_in = self.annotations.setdefault(ITEMS_IN, {})
 
         # Forge request
-        self.payload = {"catalog_query": catalog_query}
+        catalog_query = self.get_option("catalog-query", None)
+        self.payload = {}
+        if catalog_query:
+            catalog_query = " ".join(catalog_query.split())
+            catalog_query = base64.b64encode(catalog_query.encode("utf-8"))
+            self.payload = {"catalog_query": catalog_query}
 
         # Make request
         resp = requests.get(
@@ -73,8 +79,7 @@ class CachedCatalogSourceSection(object):
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
-
-        self.item_paths = json.loads(resp.text)
+        self.item_paths = resp.json()
         self.item_count["total"] = len(self.item_paths)
         self.item_count["remaining"] = len(self.item_paths)
 
@@ -163,7 +168,7 @@ class CachedCatalogSourceSection(object):
             self.migration_dir, api.portal.get().getId(), file_name
         )
         with open(file_path, "w") as fp:
-            json.dump(self.debug_infos, fp)
+            json.dump(self.items_in, fp)
 
     def slugify(self, path):
         # TODO verificare che non ci siano collisioni
@@ -178,32 +183,58 @@ class CachedCatalogSourceSection(object):
             return None
         return obj
 
-    def ploneorg_migration_get_remote_item(self, path):
+    def get_item_from_remote(self, path):
         item_url = "%s%s/get_item" % (
             self.remote_url,
             six.moves.urllib.parse.quote(path),
         )
-
         resp = requests.get(
             item_url,
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
-
-        if resp.status_code == 200:
-            item_json = resp.text
-        else:
-            logger.debug(
-                "Failed reading item from %s. %s" % (path, resp.status_code)
+        if resp.status_code == 404:
+            # path has strange chars and encoding encodes it in a wrong way.
+            item_url = "%s%s/get_item" % (self.remote_url, path)
+            resp = requests.get(
+                item_url,
+                params=self.payload,
+                auth=(self.remote_username, self.remote_password),
             )
-            self.errored.append(path)
+
+        if resp.status_code != 200:
+            logger.warning(
+                "[SKIPPED] - {url}: {code}".format(
+                    url=item_url, code=resp.status_code
+                )
+            )
+            self.items_in[path] = {'path': path, 'reason': resp.status_code}
+            self.errored.append({'path': path, 'reason': resp.status_code})
             return None
         try:
-            item = json.loads(item_json)
-        except:
-            logger.debug("Could not decode item from %s." % item_url)
-            logger.debug("Response is %s." % item_json)
-            self.errored.append(path)
+            item = resp.json()
+        except Exception:
+            logger.warning(
+                "[SKIPPED] - {url}: Could not decode json response.".format(
+                    url=item_url
+                )
+            )
+            self.items_in[path] = {'path': path, 'reason': resp.status_code}
+            self.errored.append({'path': path, 'reason': resp.status_code})
+            return None
+        if self.skip_private and item.get('is_private', False):
+            logger.warning(
+                "[SKIPPED] - {path}: Private item.".format(path=item['_path'])
+            )
+            info = {
+                'id': item.get('_id'),
+                'portal_type': item.get('_type'),
+                'title': item.get('title'),
+                'path': path,
+                'reason': 'Private item',
+            }
+            self.items_in[path] = info
+            self.errored.append(info)
             return None
         return item
 
@@ -215,13 +246,8 @@ class CachedCatalogSourceSection(object):
         cachefile = os.path.sep.join(
             [self.cache_dir, self.slugify(path) + ".json"]
         )
-        item = self.ploneorg_migration_get_remote_item(path)
+        item = self.get_item_from_remote(path)
         if not item:
-            logger.info(
-                "Export not available, skipping migration for item {0}".format(
-                    path
-                )
-            )
             return {}
 
         # incremental migration
@@ -259,15 +285,22 @@ class CachedCatalogSourceSection(object):
             and os.path.exists(cachefile)
             and "relatedItems" not in list(item.keys())
         ):
-            json_data = json.load(open(cachefile, "rb"))
+            with open(cachefile, "rb") as json_file:
+                json_data = json.load(json_file)
             item_mod_date = datetime.strptime(
-                item.get("modification_date"), "%Y-%m-%d %H:%M"
+                item.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S.%f"
             )
             item_cache_mod_date = datetime.strptime(
-                json_data.get("modification_date"), "%Y-%m-%d %H:%M"
+                json_data.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S.%f"
             )
             if item_mod_date <= item_cache_mod_date:
                 logger.info("HIT path: {0}".format(path))
+                self.items_in[json_data.get("_uid")] = {
+                    "id": json_data.get("_id"),
+                    "portal_type": json_data.get("_type"),
+                    "title": json_data.get("title"),
+                    "path": json_data.get("_path"),
+                }
                 return json_data
             logger.info("MISS path: {0}".format(path))
 
@@ -275,7 +308,7 @@ class CachedCatalogSourceSection(object):
             with open(cachefile, "w", encoding="utf-8") as file:
                 json.dump(item, file, indent=2)
 
-        self.debug_infos[item.get("_uid")] = {
+        self.items_in[item.get("_uid")] = {
             "id": item.get("_id"),
             "portal_type": item.get("_type"),
             "title": item.get("title"),

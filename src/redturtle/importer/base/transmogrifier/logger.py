@@ -1,12 +1,13 @@
-import logging
-from time import time
-
-from zope.interface import provider, implementer
-from zope.annotation.interfaces import IAnnotations
-
-from collective.transmogrifier.interfaces import ISectionBlueprint
+# -*- coding: utf-8 -*-
 from collective.transmogrifier.interfaces import ISection
+from collective.transmogrifier.interfaces import ISectionBlueprint
 from collective.transmogrifier.utils import Matcher
+from plone import api
+from time import time
+from zope.annotation.interfaces import IAnnotations
+from zope.interface import provider, implementer
+
+import logging
 
 VALIDATIONKEY = "redturtle.importer.base.logger"
 ERROREDKEY = "redturtle.importer.base.errors"
@@ -23,7 +24,6 @@ class LoggerSection(object):
         self.keys = Matcher(*keys.splitlines())
         self.previous = previous
         self.logger = name
-        from plone import api
 
         self.storage = IAnnotations(api.portal.get().REQUEST).setdefault(
             VALIDATIONKEY, []
@@ -76,16 +76,21 @@ class LoggerSection(object):
             )
         if self.errored:
             problematic2 = len(self.errored)
-            logging.getLogger(self.logger).warning(
-                "\nNext objects errored somewhere in the pipeline:\n%s"
-                % "\n".join(["\t" + i for i in self.errored])
-            )
+            logger = logging.getLogger(self.logger)
+            logger.warning("\nNext objects errored somewhere in the pipeline:")
+            for error in self.errored:
+                logger.warning(
+                    '- {path}: {reason}'.format(
+                        path=error['path'], reason=error.get('reason', '')
+                    )
+                )
+            # self.log_errors(self.errored)
         # delete validation data from annotations
-        anno = IAnnotations(self.transmogrifier)
-        if VALIDATIONKEY in anno:
-            del anno[VALIDATIONKEY]
-        if ERROREDKEY in anno:
-            del anno[ERROREDKEY]
+        annotations = IAnnotations(self.transmogrifier)
+        if VALIDATIONKEY in annotations:
+            del annotations[VALIDATIONKEY]
+        if ERROREDKEY in annotations:
+            del annotations[ERROREDKEY]
 
         seconds = working_time % 60
         minutes = working_time / 60 % 60

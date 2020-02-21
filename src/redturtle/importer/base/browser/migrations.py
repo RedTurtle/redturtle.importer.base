@@ -21,9 +21,9 @@ from zope.schema import getFieldsInOrder
 
 import json
 import six
+import os
 
 # import errno
-# import os
 
 
 class RedTurtlePlone5MigrationMain(BrowserView):
@@ -298,10 +298,6 @@ class MigrationResults(BrowserView):
     def generate_not_migrated_list(self, in_json, out_json):
         diff_keys = set(in_json.keys()) - set(out_json.keys())
         return [in_json[k] for k in diff_keys]
-        # results.extend(
-        #     self.get_json_data(option="errors_log", section_id="results")
-        # )
-        # return results
 
     def get_json_data(self, option, section_id):
         config = self.transmogrifier_conf
@@ -314,8 +310,11 @@ class MigrationResults(BrowserView):
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
-        with open(file_path, 'r') as fp:
-            return json.loads(fp.read())
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as fp:
+                return json.loads(fp.read())
+        else:
+            return {}
 
     def get_broken_links(self):
         config = self.transmogrifier_conf
@@ -326,8 +325,11 @@ class MigrationResults(BrowserView):
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
-        with open(file_path, 'r') as fp:
-            return json.loads(fp.read())
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as fp:
+                return json.loads(fp.read())
+        else:
+            return []
 
     def get_noreference_links(self):
         config = self.transmogrifier_conf
@@ -338,5 +340,8 @@ class MigrationResults(BrowserView):
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
-        with open(file_path, 'r') as fp:
-            return json.loads(fp.read())
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as fp:
+                return json.loads(fp.read())
+        else:
+            return []

@@ -163,6 +163,16 @@ Contribute
 - Issue Tracker: https://github.com/RedTurtle/redturtle.importer.base/issues
 - Source Code: https://github.com/RedTurtle/redturtle.importer.base
 
+Credits
+=======
+
+This product has been developed with some help from
+
+.. image:: https://kitconcept.com/logo.svg
+   :alt: kitconcept
+   :width: 300
+   :height: 80
+   :target: https://kitconcept.com/
 
 License
 =======

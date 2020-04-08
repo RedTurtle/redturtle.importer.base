@@ -4,6 +4,11 @@ RedTurtle importer base
 
 Tool to migrate contents between Plone sites based on transmogrifier.
 
+This tool works in addition with `redturtle.exporter.base`__
+
+__ https://pypi.org/project/redturtle.exporter.base
+
+
 Dependencies
 ============
 
@@ -135,21 +140,24 @@ __ https://github.com/RedTurtle/redturtle.importer.rer
 __ https://github.com/RedTurtle/redturtle.importer.volto
 
 
-Custom steps and mappings
--------------------------
+Users and groups migration
+==========================
 
-TODO
+You could export users and groups from your old Plone site in several ways.
 
+If you generate files with `this`__ structure, you can use them into import steps.
 
-Cache
------
+You only need to add a section to migration config file like this::
 
-TODO
+    [users]
+    users-file = path_to/users.json
+    groups-file = path_to/groups.json
 
-Incremental migration
----------------------
+Where you can specify paths for users and groups files.
 
-TODO
+This import will be performed after transmogrifier steps.
+
+__ https://training.plone.org/5/transmogrifier/users-migration.html?highlight=migrate%20user
 
 
 Contribute

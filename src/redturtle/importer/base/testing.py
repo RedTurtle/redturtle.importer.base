@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
 from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
-from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import IntegrationTesting
 from plone.app.testing import PloneSandboxLayer
@@ -17,20 +16,6 @@ import transmogrify.dexterity
 
 
 class RedturtleImporterBaseLayer(PloneSandboxLayer):
-
-    defaultBases = (PLONE_APP_CONTENTTYPES_FIXTURE,)
-
-    def setUpZope(self, app, configurationContext):
-        # Load any other ZCML that is required for your tests.
-        # The z3c.autoinclude feature is disabled in the Plone fixture base
-        # layer.
-        self.loadZCML(package=redturtle.importer.base)
-
-    def setUpPloneSite(self, portal):
-        applyProfile(portal, 'redturtle.importer.base:default')
-
-
-class RedturtleImporterBaseDockerLayer(PloneSandboxLayer):
 
     defaultBases = (PLONE_APP_CONTENTTYPES_FIXTURE,)
 
@@ -60,11 +45,10 @@ class RedturtleImporterBaseDockerLayer(PloneSandboxLayer):
             if i == 9:
                 sys.stdout.write("Docker Instance could not be started !!!")
 
-        super(RedturtleImporterBaseDockerLayer, self).setUp()
+        super(RedturtleImporterBaseLayer, self).setUp()
 
 
 REDTURTLE_IMPORTER_BASE_FIXTURE = RedturtleImporterBaseLayer()
-REDTURTLE_IMPORTER_BASE_DOCKER_FIXTURE = RedturtleImporterBaseDockerLayer()
 
 REDTURTLE_IMPORTER_BASE_INTEGRATION_TESTING = IntegrationTesting(
     bases=(REDTURTLE_IMPORTER_BASE_FIXTURE,),
@@ -85,9 +69,4 @@ REDTURTLE_IMPORTER_BASE_ACCEPTANCE_TESTING = FunctionalTesting(
         z2.ZSERVER_FIXTURE,
     ),
     name='RedturtleImporterBaseLayer:AcceptanceTesting',
-)
-
-REDTURTLE_IMPORTER_BASE_DOCKER_FUNCTIONAL_TESTING = FunctionalTesting(
-    bases=(REDTURTLE_IMPORTER_BASE_DOCKER_FIXTURE,),
-    name='RedturtleImporterBaseDockerLayer:FunctionalTesting',
 )

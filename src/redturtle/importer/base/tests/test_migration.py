@@ -6,7 +6,7 @@ from plone.app.testing import TEST_USER_ID
 from plone import api
 from plone.protect.authenticator import createToken
 from redturtle.importer.base.testing import (
-    REDTURTLE_IMPORTER_BASE_DOCKER_FUNCTIONAL_TESTING,  # noqa: E501
+    REDTURTLE_IMPORTER_BASE_FUNCTIONAL_TESTING,  # noqa: E501
 )
 
 import os
@@ -24,7 +24,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
     contents: https://github.com/RedTurtle/redturtle.exporter.base/blob/master/src/redturtle/exporter/base/setuphandlers.py
     """
 
-    layer = REDTURTLE_IMPORTER_BASE_DOCKER_FUNCTIONAL_TESTING
+    layer = REDTURTLE_IMPORTER_BASE_FUNCTIONAL_TESTING
 
     def setUp(self):
         """Custom shared utility setup for tests."""
@@ -35,6 +35,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
             name="data-migration", context=self.portal, request=self.request
         )
         self.request.form['_authenticator'] = createToken()
+        api.content.delete(objects=self.portal.listFolderContents())
 
     def tearDown(self):
         """
@@ -87,3 +88,22 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         # files and images are inside a private folder
         self.assertEqual(len(files), 0)
         self.assertEqual(len(images), 0)
+
+    def test_import_users_and_groups(self):
+        os.environ["MIGRATION_FILE_PATH"] = get_config_file_path(
+            'import_users_and_groups.cfg'
+        )
+
+        self.assertEqual(len(api.user.get_users()), 1)
+        self.assertEqual(len(api.group.get_groups()), 4)
+
+        self.migration_view.do_migrate()
+
+        self.assertEqual(len(api.user.get_users()), 3)
+        self.assertEqual(len(api.group.get_groups()), 5)
+        self.assertEqual(
+            api.user.get_users(groupname='staff')[0].getId(), 'bob'
+        )
+        self.assertEqual(
+            api.user.get_users(groupname='Administrators')[0].getId(), 'john'
+        )

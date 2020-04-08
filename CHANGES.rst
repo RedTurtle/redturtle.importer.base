@@ -1,10 +1,13 @@
 Changelog
 =========
 
-1.0.6 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Heavy refactoring for python3 compatibility.
+  [cekk]
+- Allow to import users and groups.
+  [cekk]
 
 
 1.0.5 (2019-03-19)

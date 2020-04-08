@@ -58,8 +58,8 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         events = api.content.find(portal_type="Event")
 
         self.assertEqual(len(documents), 4)
-        self.assertEqual(len(folders), 3)
-        self.assertEqual(len(collections), 1)
+        self.assertEqual(len(folders), 6)
+        self.assertEqual(len(collections), 3)
         self.assertEqual(len(news), 2)
         self.assertEqual(len(files), 1)
         self.assertEqual(len(images), 1)
@@ -80,8 +80,8 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         events = api.content.find(portal_type="Event")
 
         self.assertEqual(len(documents), 2)
-        self.assertEqual(len(folders), 1)
-        self.assertEqual(len(collections), 0)
+        self.assertEqual(len(folders), 4)
+        self.assertEqual(len(collections), 2)
         self.assertEqual(len(news), 0)
         self.assertEqual(len(events), 0)
 

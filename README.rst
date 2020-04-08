@@ -140,24 +140,21 @@ __ https://github.com/RedTurtle/redturtle.importer.rer
 __ https://github.com/RedTurtle/redturtle.importer.volto
 
 
-Users and groups migration
-==========================
+Import Users and groups
+=======================
 
-You could export users and groups from your old Plone site in several ways.
+You can also import users and groups from source site.
 
-If you generate files with `this`__ structure, you can use them into import steps.
+You only need to add a section to your migration config file like this::
 
-You only need to add a section to migration config file like this::
+    [users_and_groups]
+    import-users = True
+    import-groups = True
 
-    [users]
-    users-file = path_to/users.json
-    groups-file = path_to/groups.json
+The tool will call two views from source site and will use the settings 
+(remote-url, remote-root and credentials) from *[catalogsource]* section.
 
-Where you can specify paths for users and groups files.
-
-This import will be performed after transmogrifier steps.
-
-__ https://training.plone.org/5/transmogrifier/users-migration.html?highlight=migrate%20user
+This import is performed after transmogrifier steps.
 
 
 Contribute

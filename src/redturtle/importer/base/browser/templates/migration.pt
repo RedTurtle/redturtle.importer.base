@@ -30,13 +30,23 @@
           </dd>
         </dl>
         <code>
-          <tal:section repeat="section config">
-            <div tal:define="section_config section/config">
-              <span>[${section/id}]</span><br />
-              <tal:options tal:repeat="info section_config">
-                <span>${python:info[0]} = ${python:info[1]}</span><br />
+          <tal:section repeat="section_infos python:config.items()">
+            <div tal:define="section python:section_infos[0];
+                             section_config python:section_infos[1]">
+              <span>[${section}]</span><br />
+              <tal:options tal:repeat="info python:section_config.items()">
+                <tal:config_options condition="python:'\n' in info[1]">
+                  <span>${python:info[0]} =</span><br />
+                  <tal:options repeat="option python:info[1].split('\n')">
+                    <span tal:condition="option">&nbsp;&nbsp;&nbsp;&nbsp;${option}<br /></span>
+                  </tal:options>
+                </tal:config_options>
+                <tal:config_option condition="python:'\n' not in info[1]">
+                  <span>${python:info[0]} = ${python:info[1]}</span><br />
+                </tal:config_option>
               </tal:options>
             </div>
+            <br />
           </tal:section>
         </code>
         <form action="${context/portal_url}/data-migration" method="GET">

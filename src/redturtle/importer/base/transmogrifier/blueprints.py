@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from AccessControl.interfaces import IRoleManager
 from Acquisition import aq_base
 from collective.transmogrifier.interfaces import ISection
@@ -17,46 +18,49 @@ from plone.app.discussion.interfaces import IConversation
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IUUID
-from ploneorg.migration.interfaces import IDeserializer
-from Products.Archetypes.interfaces import IBaseObject
+from .converters import IFixedDeserializer
+
+# from Products.Archetypes.interfaces import IBaseObject
 from redturtle.importer.base import logger
 from redturtle.importer.base.interfaces import IMigrationContextSteps
 from zope.annotation.interfaces import IAnnotations
-from zope.app.container.contained import notifyContainerModified
-from zope.interface import classProvides
+from zope.container.contained import notifyContainerModified
+from zope.interface import provider
 from zope.interface import implementer
 from zope.schema import getFieldsInOrder
 
-import base64
 import logging
 import pkg_resources
 import pprint
 import transaction
+import six
+from six.moves import zip
 
 
 try:
-    pkg_resources.get_distribution('plone.app.multilingual')
+    pkg_resources.get_distribution("plone.app.multilingual")
 except pkg_resources.DistributionNotFound:
     HAS_PAM = False
 else:
     from plone.app.multilingual.interfaces import ITranslationManager
+
     HAS_PAM = True
 
 try:
-    pkg_resources.get_distribution('cioppino.twothumbs')
+    pkg_resources.get_distribution("cioppino.twothumbs")
 except pkg_resources.DistributionNotFound:
     HAS_RATINGS = False
 else:
     from cioppino.twothumbs import rate
+
     HAS_RATINGS = True
 
-VALIDATIONKEY = 'ploneorg.migration.logger'
+VALIDATIONKEY = "redturtle.importer.base.logger"
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class PrettyPrinter(object):
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
         self.pprint = pprint.PrettyPrinter().pprint
@@ -85,24 +89,24 @@ class PrettyPrinter(object):
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class DataFields(object):
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
         self.context = transmogrifier.context
-        self.datafield_prefix = options.get('datafield-prefix', '_datafield_')
+        self.datafield_prefix = options.get("datafield-prefix", "_datafield_")
         self.root_path_length = len(self.context.getPhysicalPath())
 
     def __iter__(self):
         for item in self.previous:
             # not enough info
-            if '_path' not in item:
+            if "_path" not in item:
                 yield item
                 continue
 
             obj = self.context.unrestrictedTraverse(
-                str(item['_path'].lstrip('/')), None)
+                str(item["_path"].lstrip("/")), None
+            )
 
             # path doesn't exist
             if obj is None:
@@ -110,55 +114,64 @@ class DataFields(object):
                 continue
 
             # do nothing if we got a wrong object through acquisition
-            path = item['_path']
-            if path.startswith('/'):
+            path = item["_path"]
+            if path.startswith("/"):
                 path = path[1:]
-            if '/'.join(obj.getPhysicalPath()[self.root_path_length:]) != path:
+            if (
+                "/".join(obj.getPhysicalPath()[self.root_path_length :])
+                != path
+            ):
                 yield item
                 continue
+
             for key in item.keys():
 
                 if not key.startswith(self.datafield_prefix):
                     continue
 
-                fieldname = key[len(self.datafield_prefix):]
+                fieldname = key[len(self.datafield_prefix) :]
 
-                if IBaseObject.providedBy(obj):
+                # if IBaseObject.providedBy(obj):
 
-                    field = obj.getField(fieldname)
-                    if field is None:
-                        continue
-                    if 'data' in item[key]:
-                        value = base64.b64decode(item[key]['data'])
-                    else:
-                        value = ''
-                    # XXX: handle other data field implementations
-                    old_value = field.get(obj).data
-                    if value != old_value:
-                        field.set(obj, value)
-                        obj.setFilename(item[key]['filename'])
-                        obj.setContentType(item[key]['content_type'])
-                else:
-                    # We have a destination DX type
-                    field = None
-                    for schemata in iterSchemata(obj):
-                        for name, s_field in getFieldsInOrder(schemata):
-                            if name == fieldname:
-                                field = s_field
-                                deserializer = IDeserializer(field)
-                                value = deserializer(item[key], None, item)
-                                field.set(field.interface(obj), value)
-                    if not field:
-                        print(u'Can\'t find a suitable '
-                              u'destination field {0}'.format(fieldname))
+                #     field = obj.getField(fieldname)
+                #     if field is None:
+                #         continue
+                #     if item[key].has_key('data'):
+                #         value = base64.b64decode(item[key]['data'])
+                #     else:
+                #         value = ''
+                #     # XXX: handle other data field implementations
+                #     old_value = field.get(obj).data
+                #     if value != old_value:
+                #         field.set(obj, value)
+                #         obj.setFilename(item[key]['filename'])
+                #         obj.setContentType(item[key]['content_type'])
+                # else:
+                # We have a destination DX type
+
+                field = None
+                for schemata in iterSchemata(obj):
+                    for name, s_field in getFieldsInOrder(schemata):
+                        if name == fieldname:
+                            field = s_field
+                            deserializer = IFixedDeserializer(field)
+                            value = deserializer(item[key], None, item)
+                            field.set(field.interface(obj), value)
+                if not field:
+                    logger.warning(
+                        "Can't find a suitable destination field ".format(
+                            fieldname
+                        )
+                    )
+
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class WorkflowHistory(object):
     """
     """
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -166,39 +179,43 @@ class WorkflowHistory(object):
         self.options = options
         self.previous = previous
         self.context = transmogrifier.context
-        self.wftool = api.portal.get_tool(name='portal_workflow')
+        self.wftool = api.portal.get_tool(name="portal_workflow")
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
-        if 'workflowhistory-key' in options:
-            workflowhistorykeys = options['workflowhistory-key'].splitlines()
+        if "workflowhistory-key" in options:
+            workflowhistorykeys = options["workflowhistory-key"].splitlines()
         else:
             workflowhistorykeys = defaultKeys(
-                options['blueprint'], name, 'workflow_history')
+                options["blueprint"], name, "workflow_history"
+            )
         self.workflowhistorykey = Matcher(*workflowhistorykeys)
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            workflowhistorykey = self.workflowhistorykey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            workflowhistorykey = self.workflowhistorykey(*list(item.keys()))[0]
 
-            if not pathkey or not workflowhistorykey or \
-               workflowhistorykey not in item:  # not enough info
+            if (
+                not pathkey
+                or not workflowhistorykey
+                or workflowhistorykey not in item
+            ):  # not enough info
                 yield item
                 continue
 
             obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
-            if obj is None or not getattr(obj, 'workflow_history', False):
+                str(item[pathkey]).lstrip("/"), None
+            )
+            if obj is None or not getattr(obj, "workflow_history", False):
                 yield item
                 continue
 
-            if (IBaseObject.providedBy(obj)
-                    or IDexterityContent.providedBy(obj)):
+            if IDexterityContent.providedBy(obj):
                 item_tmp = deepcopy(item)
                 wf_list = self.wftool.getWorkflowsFor(obj)
                 if not wf_list:
@@ -213,11 +230,17 @@ class WorkflowHistory(object):
                 # Asuming one workflow
                 try:
                     item_tmp[workflowhistorykey].update(
-                        {current_obj_wf: item_tmp[workflowhistorykey][item_tmp[workflowhistorykey].keys()[0]]})  # noqa
+                        {
+                            current_obj_wf: item_tmp[workflowhistorykey][
+                                list(item_tmp[workflowhistorykey].keys())[0]
+                            ]
+                        }
+                    )  # noqa
                 except Exception:
-                    logger.error(u'Failed to copy history to the new'
-                                 u' workflow for {0}'.format(
-                                     item['_path']))
+                    logger.debug(
+                        u"Failed to copy history to the new"
+                        u" workflow for {0}".format(item["_path"])
+                    )
                     pass
                 # In case that we need to change internal state names
                 # wf_hist_temp = deepcopy(item[workflowhistorykey])
@@ -234,10 +257,17 @@ class WorkflowHistory(object):
 
                 # get back datetime stamp and set the workflow history
                 for workflow in item_tmp[workflowhistorykey]:
-                    for k, workflow2 in enumerate(item_tmp[workflowhistorykey][workflow]):  # noqa
-                        if 'time' in item_tmp[workflowhistorykey][workflow][k]:
-                            item_tmp[workflowhistorykey][workflow][k]['time'] = DateTime(  # noqa
-                                item_tmp[workflowhistorykey][workflow][k]['time'])  # noqa
+                    for k, workflow2 in enumerate(
+                        item_tmp[workflowhistorykey][workflow]
+                    ):  # noqa
+                        if "time" in item_tmp[workflowhistorykey][workflow][k]:
+                            item_tmp[workflowhistorykey][workflow][k][
+                                "time"
+                            ] = DateTime(  # noqa
+                                item_tmp[workflowhistorykey][workflow][k][
+                                    "time"
+                                ]
+                            )  # noqa
 
                 obj.workflow_history.data = item_tmp[workflowhistorykey]
 
@@ -250,10 +280,9 @@ class WorkflowHistory(object):
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class LocalRoles(object):
     """ """
-
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -262,30 +291,32 @@ class LocalRoles(object):
         self.previous = previous
         self.context = transmogrifier.context
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
-        if 'local-roles-key' in options:
-            roleskeys = options['local-roles-key'].splitlines()
+        if "local-roles-key" in options:
+            roleskeys = options["local-roles-key"].splitlines()
         else:
-            roleskeys = defaultKeys(options['blueprint'], name, 'local_roles')
+            roleskeys = defaultKeys(options["blueprint"], name, "local_roles")
         self.roleskey = Matcher(*roleskeys)
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            roleskey = self.roleskey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            roleskey = self.roleskey(*list(item.keys()))[0]
 
-            if not pathkey or not roleskey or \
-               roleskey not in item:    # not enough info
+            if (
+                not pathkey or not roleskey or roleskey not in item
+            ):  # not enough info
                 yield item
                 continue
             obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
-            if obj is None:             # path doesn't exist
+                str(item[pathkey]).lstrip("/"), None
+            )
+            if obj is None:  # path doesn't exist
                 yield item
                 continue
 
@@ -296,44 +327,45 @@ class LocalRoles(object):
                         try:
                             obj.reindexObjectSecurity()
                         except Exception:
-                            logger.error(
-                                'Failed to reindexObjectSecurity {0}'.format(
-                                    item['_path']
+                            logger.warning(
+                                "Failed to reindexObjectSecurity {}".format(
+                                    item["_path"]
                                 )
                             )
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class LeftOvers(object):
     """ """
 
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
+        self.transmogrifier.default_pages = []
         self.name = name
         self.options = options
         self.previous = previous
         self.context = transmogrifier.context
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
-        if 'properties-key' in options:
-            propertieskeys = options['properties-key'].splitlines()
+        if "properties-key" in options:
+            propertieskeys = options["properties-key"].splitlines()
         else:
             propertieskeys = defaultKeys(
-                options['blueprint'], name, 'properties')
+                options["blueprint"], name, "properties"
+            )
         self.propertieskey = Matcher(*propertieskeys)
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            propertieskey = self.propertieskey(*item.keys())[0]  # noqa
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            # propertieskey = self.propertieskey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info
@@ -341,7 +373,8 @@ class LeftOvers(object):
                 continue
 
             obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
+                str(item[pathkey]).lstrip("/"), None
+            )
 
             if obj is None:
                 # path doesn't exist
@@ -349,112 +382,128 @@ class LeftOvers(object):
                 continue
 
             # Exclude from nav
-            if item.get('excludeFromNav', False):
-                obj.exclude_from_nav = item.get('excludeFromNav')
+            if item.get("excludeFromNav", False):
+                obj.exclude_from_nav = item.get("excludeFromNav")
 
             # Open in new window
-            if item.get('obrirfinestra', False):
-                obj.open_link_in_new_window = item.get('obrirfinestra')
+            if item.get("obrirfinestra", False):
+                obj.open_link_in_new_window = item.get("obrirfinestra")
             # Layout and DefaultPage from unicode to str
-            if item.get('_layout', False):
-                item['_layout'] = str(item['_layout'])
-                obj.setLayout(item['_layout'])
-            if item.get('_defaultpage', False):
-                item['_defaultpage'] = str(item['_defaultpage'])
+            if item.get("_layout", False):
+                item["_layout"] = str(item["_layout"])
+                obj.setLayout(item["_layout"])
+            if item.get("_defaultpage", False):
+                item["_defaultpage"] = str(item["_defaultpage"])
                 # XXX: setDefaultPage si aspetta che la default esista
                 # nel folder, se la cartella viene creata prima della
                 # default questo non e' possibile, copiata la funzione
                 # senza questo controllo da qui:
                 # parts/omelette/Products/CMFDynamicViewFTI/browserdefault.py
                 # obj.setDefaultPage(item['_defaultpage'])
-                try:
-                    obj.manage_addProperty(
-                        'default_page', item['_defaultpage'], 'string')
-                except Exception:
-                    pass
+                # try:
+                #     obj.manage_addProperty(
+                #         "default_page", item["_defaultpage"], "string"
+                #     )
+                # except Exception:
+                #     pass
 
-                obj.reindexObject(['is_default_page'])
+                # obj.reindexObject(["is_default_page"])
+
+                # Salviamo le pagine di default all'interno del trasmogrifier
+                # alla fine della migrazione le andiamo a recuperare e le
+                # assegnamo
+                defaultPage = {}
+                defaultPage["obj"] = obj.UID()
+                defaultPage["default_page"] = item["_defaultpage"]
+                self.transmogrifier.default_pages.append(defaultPage)
 
             # Local roles inherit
-            if item.get('_local_roles_block', False):
-                if item['_local_roles_block']:
+            if item.get("_local_roles_block", False):
+                if item["_local_roles_block"]:
                     obj.__ac_local_roles_block__ = True
 
             # Rebuild CollageAlias AT reference
-            if item.get('_type', False):
-                if item['_type'] == u'CollageAlias':
-                    if item['_atrefs'].get('Collage_aliasedItem', False):
+            if item.get("_type", False):
+                if item["_type"] == u"CollageAlias":
+                    if item["_atrefs"].get("Collage_aliasedItem", False):
                         try:
-                            ref_path = item['language'] + \
-                                item['_atrefs']['Collage_aliasedItem'][0][item['_site_path_length']:]  # noqa
+                            ref_path = (
+                                item["language"]
+                                + item["_atrefs"]["Collage_aliasedItem"][0][
+                                    item["_site_path_length"] :
+                                ]
+                            )  # noqa
                             ref_obj = self.context.unrestrictedTraverse(
-                                str(ref_path))
+                                str(ref_path)
+                            )
                             ref_uuid = IUUID(ref_obj)
                             obj.set_target(ref_uuid)
                         except Exception:
                             pass
 
             # Put creation and modification time on its place
-            if item.get('creation_date', False):
+            if item.get("creation_date", False):
                 if IDexterityContent.providedBy(item):
-                    obj.creation_date = parse(item.get('creation_date'))
+                    obj.creation_date = parse(item.get("creation_date"))
                 else:
-                    obj.creation_date = DateTime(item.get('creation_date'))
+                    obj.creation_date = DateTime(item.get("creation_date"))
 
-            if item.get('modification_date', False):
+            if item.get("modification_date", False):
                 if IDexterityContent.providedBy(obj):
                     obj.modification_date = parse(
-                        item.get('modification_date'))
+                        item.get("modification_date")
+                    )
                 else:
-                    obj.creation_date = DateTime(item.get('modification_date'))
+                    obj.creation_date = DateTime(item.get("modification_date"))
 
             # Set subjects
-            if item.get('subject', False):
-                obj.setSubject(item['subject'])
+            if item.get("subject", False):
+                obj.setSubject(item["subject"])
 
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class Discussions(object):
     """A blueprint for importing comments into plone
     """
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
         self.context = transmogrifier.context
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'parent_path')
+            pathkeys = defaultKeys(options["blueprint"], name, "parent_path")
         self.pathkey = Matcher(*pathkeys)
-        if 'comment-type-key' in options:
-            comment_type_keys = options['comment-type-key'].splitlines()
+        if "comment-type-key" in options:
+            comment_type_keys = options["comment-type-key"].splitlines()
         else:
             comment_type_keys = defaultKeys(
-                options['blueprint'], name, 'comment_type')
+                options["blueprint"], name, "comment_type"
+            )
         self.comment_type_key = Matcher(*comment_type_keys)
-        self.date_format = options.get('date-format', '%Y/%m/%d %H:%M:%S')
+        self.date_format = options.get("date-format", "%Y/%m/%d %H:%M:%S")
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            typekey = self.comment_type_key(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
             # item doesn't exist or the type of comment cannot be
             # created
-#            if not pathkey or not typekey:
-#                # TODO: log a note
-#                yield item
-#                continue
+            #            if not pathkey or not typekey:
+            #                # TODO: log a note
+            #                yield item
+            #                continue
             path = item[pathkey]
             obj = self.context.unrestrictedTraverse(
-                str(path).lstrip('/'), None)
+                str(path).lstrip("/"), None
+            )
             # path doesn't exist
             if obj is None:
                 yield item
                 continue
-            discussion = item.get('discussions', [])
+            discussion = item.get("discussions", [])
             if not discussion:
                 yield item
                 continue
@@ -463,61 +512,81 @@ class Discussions(object):
             conversation = IConversation(obj)
 
             # remove all comments to avoid duplication when override is disabled  # noqa
-            if conversation.items():
+            if list(conversation.items()):
                 comments_id = [x[0] for x in conversation.items()]
                 for value in comments_id:
                     try:
                         del conversation[value]
                     except Exception:
-                        print 'WARNING: Discussion with id {0} not found'.format(  # noqa
-                            value)
+                        logger.warning(
+                            "WARNING: Discussion with id {0} not found".format(  # noqa
+                                value
+                            )
+                        )
                         pass
 
             for comment in discussion:
                 new_comment = CommentFactory()
 
-                new_comment.text = comment.get('text')
-                new_comment.creator = comment.get('creator')
-                new_comment.author_name = comment.get('author_name')
-                new_comment.author_username = comment.get('author_username')
-                new_comment.author_email = comment.get('author_email')
+                new_comment.text = comment.get("text")
+                new_comment.creator = comment.get("creator")
+                new_comment.author_name = comment.get("author_name")
+                new_comment.author_username = comment.get("author_username")
+                new_comment.author_email = comment.get("author_email")
                 new_comment.in_reply_to = id_map.get(
-                    comment.get('in_reply_to'), 0)
-                new_comment.mime_type = comment.get('mime_type')
-                new_comment._owner = comment.get('_owner')
+                    comment.get("in_reply_to"), 0
+                )
+                new_comment.mime_type = comment.get("mime_type")
+                new_comment._owner = comment.get("_owner")
                 new_comment.__ac_local_roles__ = comment.get(
-                    '__ac_local_roles__')
+                    "__ac_local_roles__"
+                )
                 new_comment.user_notification = comment.get(
-                    'user_notification')
+                    "user_notification"
+                )
                 new_comment.creation_date = DateTime(
-                    comment.get('creation_date')).asdatetime()
+                    comment.get("creation_date")
+                ).asdatetime()
                 new_comment.modification_date = DateTime(
-                    comment.get('modification_date')).asdatetime()
+                    comment.get("modification_date")
+                ).asdatetime()
 
                 conversation.addComment(new_comment)
 
                 comment_wf = new_comment.workflow_history.data.get(
-                    'comment_review_workflow')
+                    "comment_review_workflow"
+                )
                 if comment_wf:
-                    new_comment.workflow_history.data.get('comment_review_workflow')[  # noqa
-                        0]['review_state'] = comment['status']
+                    new_comment.workflow_history.data.get(
+                        "comment_review_workflow"
+                    )[  # noqa
+                        0
+                    ][
+                        "review_state"
+                    ] = comment[
+                        "status"
+                    ]
 
                 id_map.update(
-                    {comment.get('comment_id'): int(new_comment.comment_id)}
+                    {comment.get("comment_id"): int(new_comment.comment_id)}
                 )
 
-                print('Added comment with id {0} to item {1}'.format(
-                    new_comment.comment_id, obj.absolute_url()))
+                logger.info(
+                    (
+                        "Added comment with id {0} to item {1}".format(
+                            new_comment.comment_id, obj.absolute_url()
+                        )
+                    )
+                )
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class FieldsCorrector(object):
     """ This corrects the differences (mainly in naming) of the incoming fields
         with the expected ones.
     """
-
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -526,24 +595,23 @@ class FieldsCorrector(object):
         self.previous = previous
         self.context = transmogrifier.context
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
-        if 'properties-key' in options:
-            propertieskeys = options['properties-key'].splitlines()
+        if "properties-key" in options:
+            propertieskeys = options["properties-key"].splitlines()
         else:
             propertieskeys = defaultKeys(
-                options['blueprint'], name, 'properties')
+                options["blueprint"], name, "properties"
+            )
         self.propertieskey = Matcher(*propertieskeys)
 
     def __iter__(self):
-
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
-            propertieskey = self.propertieskey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
 
             if not pathkey:
                 # not enough info
@@ -551,7 +619,8 @@ class FieldsCorrector(object):
                 continue
 
             obj = self.context.unrestrictedTraverse(
-                str(item[pathkey]).lstrip('/'), None)
+                str(item[pathkey]).lstrip("/"), None
+            )
 
             if obj is None:
                 # path doesn't exist
@@ -559,28 +628,27 @@ class FieldsCorrector(object):
                 continue
 
             # Event specific fields
-            if item.get('startDate', False):
-                item['start'] = item.get('startDate')
-            if item.get('endDate', False):
-                item['end'] = item.get('endDate')
+            if item.get("startDate", False):
+                item["start"] = item.get("startDate")
+            if item.get("endDate", False):
+                item["end"] = item.get("endDate")
 
             # Dublin core
-            if item.get('expirationDate', False):
-                item['expires'] = item.get('expirationDate')
-            if item.get('effectiveDate', False):
-                item['effective'] = item.get('effectiveDate')
+            if item.get("expirationDate", False):
+                item["expires"] = item.get("expirationDate")
+            if item.get("effectiveDate", False):
+                item["effective"] = item.get("effectiveDate")
 
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class PAMLinker(object):
     """ Links provided translations using plone.app.multilingual. It assumes
         that the object to be linked objects are already in place, so this
         section is intended to be run on second pass migration phase.
     """
-
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -589,15 +657,15 @@ class PAMLinker(object):
         self.previous = previous
         self.context = transmogrifier.context
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
     def __iter__(self):
         for item in self.previous:
-            pathkey = self.pathkey(*item.keys())[0]
+            pathkey = self.pathkey(*list(item.keys()))[0]
 
             if HAS_PAM:
                 if not pathkey:
@@ -606,20 +674,29 @@ class PAMLinker(object):
                     continue
 
                 obj = self.context.unrestrictedTraverse(
-                    str(item[pathkey]).lstrip('/'), None)
+                    str(item[pathkey]).lstrip("/"), None
+                )
 
                 if obj is None:
                     # path doesn't exist
                     yield item
                     continue
 
-                if item.get('_translations', False):
+                if item.get("_translations", False):
                     lang_info = []
-                    for lang in item['_translations']:
+                    for lang in item["_translations"]:
                         target_obj = self.context.unrestrictedTraverse(
-                            str('{0}{1}'.format(lang, item['_translations'][lang])).lstrip('/'), None)  # noqa
-                        if target_obj and (IBaseObject.providedBy(target_obj) or IDexterityContent.providedBy(target_obj)):  # noqa
-                            lang_info.append((target_obj, lang),)
+                            str(
+                                "{0}{1}".format(
+                                    lang, item["_translations"][lang]
+                                )
+                            ).lstrip("/"),
+                            None,
+                        )  # noqa
+                        if target_obj and (
+                            IDexterityContent.providedBy(target_obj)
+                        ):  # noqa
+                            lang_info.append((target_obj, lang))
                     try:
                         self.link_translations(lang_info)
                     except IndexError:
@@ -642,24 +719,23 @@ class PAMLinker(object):
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class OrderSection(object):
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
-        self.every = int(options.get('every', 1000))
+        self.every = int(options.get("every", 1000))
         self.previous = previous
         self.context = transmogrifier.context
-        self.pathkey = defaultMatcher(options, 'path-key', name, 'path')
-        self.poskey = defaultMatcher(options, 'pos-key', name, 'gopip')
+        self.pathkey = defaultMatcher(options, "path-key", name, "path")
+        self.poskey = defaultMatcher(options, "pos-key", name, "gopip")
         # Position of items without a position value
-        self.default_pos = int(options.get('default-pos', 1000000))
+        self.default_pos = int(options.get("default-pos", 1000000))
 
     def __iter__(self):
         # Store positions in a mapping containing an id to position mapping for
         # each parent path {parent_path: {item_id: item_pos}}.
         positions_mapping = {}
         for item in self.previous:
-            keys = item.keys()
+            keys = list(item.keys())
             pathkey = self.pathkey(*keys)[0]
             poskey = self.poskey(*keys)[0]
 
@@ -667,8 +743,8 @@ class OrderSection(object):
                 yield item
                 continue
 
-            item_id = item[pathkey].split('/')[-1]
-            parent_path = '/'.join(item[pathkey].split('/')[:-1])
+            item_id = item[pathkey].split("/")[-1]
+            parent_path = "/".join(item[pathkey].split("/")[:-1])
             if parent_path not in positions_mapping:
                 positions_mapping[parent_path] = {}
             positions_mapping[parent_path][item_id] = item[poskey]
@@ -679,7 +755,9 @@ class OrderSection(object):
         for path, positions in positions_mapping.items():
 
             # Normalize positions
-            ordered_keys = sorted(positions.keys(), key=lambda x: positions[x])
+            ordered_keys = sorted(
+                list(positions.keys()), key=lambda x: positions[x]
+            )
             normalized_positions = {}
             for pos, key in enumerate(ordered_keys):
                 normalized_positions[key] = pos
@@ -687,6 +765,7 @@ class OrderSection(object):
             # TODO: After the new collective.transmogrifier release (>1.4), the
             # utils.py provides a traverse method.
             from collective.transmogrifier.utils import traverse
+
             parent = traverse(self.context, path)
             # parent = self.context.unrestrictedTraverse(path.lstrip('/'))
             if not parent:
@@ -694,16 +773,20 @@ class OrderSection(object):
 
             parent_base = aq_base(parent)
 
-            if getattr(parent_base, 'getOrdering', None):
+            if getattr(parent_base, "getOrdering", None):
                 ordering = parent.getOrdering()
                 # Only DefaultOrdering of p.folder is supported
-                if (not getattr(ordering, '_order', None)
-                        and not getattr(ordering, '_pos', None)):
+                if not getattr(ordering, "_order", None) and not getattr(
+                    ordering, "_pos", None
+                ):
                     continue
                 order = ordering._order()
                 pos = ordering._pos()
-                order.sort(key=lambda x: normalized_positions.get(
-                    x, pos.get(x, self.default_pos)))
+                order.sort(
+                    key=lambda x: normalized_positions.get(
+                        x, pos.get(x, self.default_pos)
+                    )
+                )
                 for i, id_ in enumerate(order):
                     pos[id_] = i
 
@@ -711,6 +794,7 @@ class OrderSection(object):
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class PathManipulator(object):
 
     """ This allows to modify the path parts given a template in the template
@@ -733,64 +817,73 @@ class PathManipulator(object):
         used with no changes.
     """
 
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
         # self.key = Expression(options['key'], transmogrifier, name, options)
-        self.template = Expression(options['template'], transmogrifier, name,
-                                   options)
+        self.template = Expression(
+            options["template"], transmogrifier, name, options
+        )
         # self.value = Expression(options['value'], transmogrifier, name,
         #                         options)
-        self.condition = Condition(options.get('condition', 'python:True'),
-                                   transmogrifier, name, options)
+        self.condition = Condition(
+            options.get("condition", "python:True"),
+            transmogrifier,
+            name,
+            options,
+        )
         self.previous = previous
 
-        self.available_operators = ['*', '', '=']
+        self.available_operators = ["*", "", "="]
 
         self.anno = IAnnotations(transmogrifier)
         self.storage = self.anno.setdefault(VALIDATIONKEY, [])
 
     def __iter__(self):
         for item in self.previous:
-            template = unicode(self.template(item))
-            result_path = ['', ]
+            template = six.text_type(self.template(item))
+            result_path = [""]
             if self.condition(item, key=template):
-                original_path = item['_path'].split('/')
+                original_path = item["_path"].split("/")
                 # Save the original_path in the item
-                item['_original_path'] = '/'.join(original_path)
-                template = template.split('/')
-                if len(original_path) != len(template) and \
-                   ('*' not in template or '**' not in template):
-                    logger.error(
-                        'The template and the length of the path is not the same nad there is no wildcards on it')  # noqa
+                item["_original_path"] = "/".join(original_path)
+                template = template.split("/")
+                if len(original_path) != len(template) and (
+                    "*" not in template or "**" not in template
+                ):
+                    logger.debug(
+                        "The template and the length of the path is not the"
+                        "same nad there is no wildcards on it"
+                    )
                     yield item
 
                 # One to one substitution, no wildcards
-                if len(original_path) == len(template) and \
-                   u'*' not in template and u'**' not in template:
-                    actions = zip(original_path, template)
+                if (
+                    len(original_path) == len(template)
+                    and u"*" not in template
+                    and u"**" not in template
+                ):
+                    actions = list(zip(original_path, template))
                     for p_path, operator in actions:
                         if operator not in self.available_operators:
                             # Substitute one string for the other
                             result_path.append(operator)
-                        elif operator == '=':
+                        elif operator == "=":
                             result_path.append(p_path)
-                        elif operator == '':
+                        elif operator == "":
                             pass
 
                 # We only attend to the number of partial paths before and
                 # after the wildcard
-                if u'*' in template or u'**' in template:
-                    index = template.index(u'*')
+                if u"*" in template or u"**" in template:
+                    index = template.index(u"*")
                     # Process the head of the path (until wildcard)
-                    head = zip(original_path, template[:index])
+                    head = list(zip(original_path, template[:index]))
                     for p_path, operator in head:
                         if operator not in self.available_operators:
                             # Substitute one string for the other
                             result_path.append(operator)
-                        elif operator == '=':
+                        elif operator == "=":
                             result_path.append(p_path)
-                        elif operator == '':
+                        elif operator == "":
                             pass
 
                     # Need to know how many partial paths we have to copy (*)
@@ -801,37 +894,39 @@ class PathManipulator(object):
                     # Process the tail of the path (from wildcard)
                     original_path_reversed = list(original_path)
                     original_path_reversed.reverse()
-                    tail = zip(original_path_reversed,
-                               template[-tail_path_length])
+                    tail = list(
+                        zip(
+                            original_path_reversed, template[-tail_path_length]
+                        )
+                    )
 
                     # Complete the tail
                     for p_path, operator in tail:
                         if operator not in self.available_operators:
                             # Substitute one string for the other
                             result_path.append(operator)
-                        elif operator == '=':
+                        elif operator == "=":
                             result_path.append(p_path)
-                        elif operator == '':
+                        elif operator == "":
                             pass
 
                 # Update storage item counter path (for logging)
-                if item['_path'] in self.storage:
-                    self.storage.remove(item['_path'])
-                    self.storage.append('/'.join(result_path))
+                if item["_path"] in self.storage:
+                    self.storage.remove(item["_path"])
+                    self.storage.append("/".join(result_path))
 
                 # Update item path
-                item['_path'] = '/'.join(result_path)
+                item["_path"] = "/".join(result_path)
 
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class CioppinoTwoThumbsRatings(object):
 
     """ Migrate ratings from cioppino.twothumbs
     """
-
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -839,29 +934,29 @@ class CioppinoTwoThumbsRatings(object):
 
     def __iter__(self):
         for item in self.previous:
-            if item.get('_ratings', False):
+            if item.get("_ratings", False):
                 obj = self.context.unrestrictedTraverse(
-                    str(item['_path']).lstrip('/'), None)
+                    str(item["_path"]).lstrip("/"), None
+                )
                 if obj is None:
                     # path doesn't exist
                     yield item
                     continue
-                yays = 'cioppino.twothumbs.yays'
-                nays = 'cioppino.twothumbs.nays'
+                yays = "cioppino.twothumbs.yays"
+                nays = "cioppino.twothumbs.nays"
                 rate.setupAnnotations(obj)
                 annotations = IAnnotations(obj)
-                annotations[yays] = item['_ratings']['ups']
-                annotations[nays] = item['_ratings']['downs']
+                annotations[yays] = item["_ratings"]["ups"]
+                annotations[nays] = item["_ratings"]["downs"]
 
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class CommitSection(object):
-    classProvides(ISectionBlueprint)
-
     def __init__(self, transmogrifier, name, options, previous):
-        self.every = int(options.get('every', 1000))
+        self.every = int(options.get("every", 1000))
         self.previous = previous
 
     def __iter__(self):
@@ -870,17 +965,17 @@ class CommitSection(object):
             count = (count + 1) % self.every
             if count == 0:
                 transaction.savepoint(optimistic=True)
-                logging.info('Committing changes!')
+                logging.info("Committing changes!")
                 transaction.commit()
             yield item
 
 
 @implementer(ISection)
+@provider(ISectionBlueprint)
 class ContextFixes(object):
     """
     Do specific-context steps
     """
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.previous = previous
@@ -889,7 +984,8 @@ class ContextFixes(object):
     def __iter__(self):
         for item in self.previous:
             obj = self.context.unrestrictedTraverse(
-                str(item['_path']).lstrip('/'), None)
+                str(item["_path"]).lstrip("/"), None
+            )
             # path doesn't exist
             if obj is None:
                 yield item
@@ -897,7 +993,7 @@ class ContextFixes(object):
             try:
                 provider = IMigrationContextSteps(obj)
                 provider.doSteps(item)
-            except TypeError:
+            except TypeError as e:
                 # adapter not provided
                 yield item
                 continue

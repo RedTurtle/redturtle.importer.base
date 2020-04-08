@@ -33,21 +33,30 @@
               </tbody>
             </table>
             <div class="errors" tal:condition="not:results/same_results">
-              <h3>Contents not migrated</h3>
+              <h3>Contents not migrated [${python:len(results.get('not_migrated', 0))}]</h3>
               <table class="listing" summary="Results">
                 <tbody>
                   <tr>
-                    <th>portal_type</th>
-                    <th>title</th>
-                    <th>path</th>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Path</th>
+                    <th>Reason</th>
                   </tr>
                   <tr tal:repeat="item results/not_migrated">
-                    <td>${item/portal_type}</td>
-                    <td>${item/title}</td>
-                    <td>${item/path}</td>
+                    <td>${item/portal_type|nothing}</td>
+                    <td>${item/title|nothing}</td>
+                    <td>${item/path|nothing}</td>
+                    <td>${item/reason|nothing}</td>
                   </tr>
                 </tbody>
               </table>
+
+              <p class="discreet">
+                <ul>
+                  <li>Reason <strong>404</strong> means that we didn't find that content on source website.</li>
+                  <li>A content not migrated, could has been skipped in some section for some reason.</li>
+                </ul>
+              </p>
             </div>
           </section>
           <section tal:define="broken_links results/broken_links">

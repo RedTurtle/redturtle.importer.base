@@ -2,101 +2,22 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:plone="http://namespaces.plone.org/plone"
-    xmlns:transmogrifier="http://namespaces.plone.org/transmogrifier"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
     i18n_domain="redturtle.importer.base">
 
-
-  <!-- Publish static files -->
-  <plone:static
-      name="redturtle.importer.base"
-      type="plone"
-      directory="static"
-      />
-
-  <!-- Importer configuration -->
-  <include package="collective.transmogrifier" file="meta.zcml" />
-  <include package="z3c.unconfigure" file="meta.zcml" />
-
-  <include package="transmogrify.dexterity" file="converters.zcml" />
-  <unconfigure>
-    <adapter factory="transmogrify.dexterity.converters.DatetimeDeserializer" />
-  </unconfigure>
-
-  <utility
-      component=".source.CachedCatalogSourceSection"
-      name="redturtle.migration.cachedcatalogsource"
-      />
-
-  <utility
-      component=".blueprints.WorkflowHistory"
-      name="redturtle.importer.base.sections.workflowupdater"
-      />
-
-  <utility
-      component=".blueprints.DataFields"
-      name="redturtle.importer.base.sections.datafields"
-      />
-
-  <utility
-      component=".blueprints.LeftOvers"
-      name="redturtle.importer.base.leftovers"
-      />
-
-  <utility
-      component=".blueprints.Discussions"
-      name="redturtle.importer.base.discussions"
-      />
-  
-  <utility
-      component=".blueprints.ContextFixes"
-      name="redturtle.importer.base.context_fixes"
-      />
-
-  <utility
-      component=".blueprints.CommitSection"
-      name="redturtle.importer.base.sections.commit"
-      />
-
-  <utility
-      component=".schemaupdater.DexterityUpdateSection"
-      name="redturtle.importer.base.schemaupdater"
-      />
-
-  <utility
-      component=".constructor.ConstructorSection"
-      name="redturtle.importer.base.sections.constructor"
-      />
-
-  <utility
-      component=".contentsmapping.ContentsMappingSection"
-      name="redturtle.importer.base.sections.contentsmapping"
-      />
-
-  <utility
-      component=".migrationresults.MigrationResults"
-      name="redturtle.importer.base.migrationresults"
-      />
-
-  <adapter factory=".converters.MasterSelectDeserializer" />
-
-  <transmogrifier:registerConfig
-    name="redturtle.plone5.main"
-    title="Migration configuration for querying the catalog of a Plone site"
-    configuration="redturtleplone5.cfg"
-    />
-
   <browser:page
-    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    for="plone.app.layout.navigation.interfaces.INavigationRoot"
     name="data-migration"
     class=".migrations.RedTurtlePlone5MigrationMain"
     template="templates/migration.pt"
     permission="cmf.ManagePortal"
     />
   <browser:page
-    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    for="plone.app.layout.navigation.interfaces.INavigationRoot"
     name="migration-results"
     class=".migrations.MigrationResults"
     template="templates/migration_result.pt"
     permission="cmf.ManagePortal"
     />
+
 </configure>

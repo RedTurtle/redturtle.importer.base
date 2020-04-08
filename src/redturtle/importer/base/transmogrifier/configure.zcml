@@ -1,0 +1,104 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:transmogrifier="http://namespaces.plone.org/transmogrifier"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="redturtle.importer.base">
+
+  <!-- Importer configuration -->
+  <include package="collective.transmogrifier" file="meta.zcml" />
+
+  <transmogrifier:registerConfig
+    name="redturtlePlone5Main"
+    title="Migration configuration for querying the catalog of a Plone site"
+    configuration="redturtleplone5.cfg"
+    />
+
+  <include package="z3c.unconfigure" file="meta.zcml" />
+
+  <include package="transmogrify.dexterity" file="converters.zcml" />
+  <unconfigure>
+    <adapter factory="transmogrify.dexterity.converters.DatetimeDeserializer" />
+  </unconfigure>
+  <adapter factory=".converters.DatetimeDeserializer" />
+
+  <utility
+      component=".blueprints.PrettyPrinter"
+      name="redturtle.importer.base.sections.pprinter"
+      />
+
+  <utility
+      component=".logger.LoggerSection"
+      name="redturtle.importer.base.sections.logger"
+      />
+
+  <utility
+      component=".blueprints.FieldsCorrector"
+      name="redturtle.importer.base.sections.fieldscorrector"
+      />
+
+  <utility
+      component=".blueprints.LocalRoles"
+      name="redturtle.importer.base.sections.localroles"
+      />
+
+  <utility
+      component=".source.CachedCatalogSourceSection"
+      name="redturtle.migration.cachedcatalogsource"
+      />
+
+  <utility
+      component=".blueprints.WorkflowHistory"
+      name="redturtle.importer.base.sections.workflowupdater"
+      />
+
+  <utility
+      component=".blueprints.DataFields"
+      name="redturtle.importer.base.sections.datafields"
+      />
+
+  <utility
+      component=".blueprints.LeftOvers"
+      name="redturtle.importer.base.sections.leftovers"
+      />
+
+  <utility
+      component=".blueprints.Discussions"
+      name="redturtle.importer.base.sections.discussions"
+      />
+
+  <utility
+      component=".blueprints.ContextFixes"
+      name="redturtle.importer.base.sections.context_fixes"
+      />
+
+  <utility
+      component=".blueprints.CommitSection"
+      name="redturtle.importer.base.sections.commit"
+      />
+
+  <utility
+      component=".schemaupdater.DexterityUpdateSection"
+      name="redturtle.importer.base.sections.schemaupdater"
+      />
+
+  <utility
+      component=".constructor.ConstructorSection"
+      name="redturtle.importer.base.sections.constructor"
+      />
+
+  <utility
+      component=".contentsmapping.ContentsMappingSection"
+      name="redturtle.importer.base.sections.contentsmapping"
+      />
+
+  <utility
+      component=".migrationresults.MigrationResults"
+      name="redturtle.importer.base.sections.migrationresults"
+      />
+
+    <adapter
+        provides=".converters.IFixedDeserializer"
+        factory = ".converters.FixedDeserializer"
+    />
+</configure>

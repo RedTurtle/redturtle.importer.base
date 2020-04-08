@@ -1,38 +1,46 @@
 # -*- coding: utf-8 -*-
 from collective.transmogrifier.transmogrifier import configuration_registry
+from six.moves.configparser import RawConfigParser
 
-import ConfigParser
+import logging
+import os
 
 
-def get_base_config(section='', all=False):
+logger = logging.getLogger(__name__)
+
+
+def get_transmogrifier_configuration():
     base_config_path = configuration_registry.getConfiguration(
-        'redturtle.plone5.main').get('configuration')
-    config = ConfigParser.ConfigParser()
-    config.read(base_config_path)
-    if all:
-        return get_all_config(config)
-    if not config.has_section(section):
-        return {}
-    return get_config_for_section(config, section)
-
-
-def get_additional_config(section='', all=False):
-    config = ConfigParser.ConfigParser()
-    config.read('.migrationconfig.cfg')
-    if all:
-        return get_all_config(config)
-    if not config.has_section(section):
-        return {}
-    return get_config_for_section(config, section)
-
-
-def get_all_config(config):
-    return [{'id': x, 'config': list(config.items(x))}
-            for x in config.sections()]
-
-
-def get_config_for_section(config, section):
+        "redturtlePlone5Main"
+    ).get("configuration")
+    parser = RawConfigParser()
+    parser.optionxform = str  # case sensitive
+    with open(base_config_path) as fp:
+        parser.readfp(fp)
     result = {}
-    for k, v in config.items(section):
-        result[k] = v
+    for section in parser.sections():
+        result[section] = dict(parser.items(section))
+
+    for section, options in get_additional_config().items():
+        result.setdefault(section, {}).update(options)
+    return result
+
+
+def get_additional_config(section="", all=False):
+    config = RawConfigParser()
+    path = os.environ.get('MIGRATION_FILE_PATH', '')
+    if not path:
+        path = ".migrationconfig.cfg"
+    if not os.path.isfile(path):
+        logger.warning(
+            'Unable to find additional config file: "{}". We are skipping it and using default config.'.format(  # noqa
+                path
+            )
+        )
+        return {}
+    with open(path) as fp:
+        config.readfp(fp)
+    result = {}
+    for section in config.sections():
+        result[section] = dict(config.items(section))
     return result

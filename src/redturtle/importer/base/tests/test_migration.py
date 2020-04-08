@@ -35,6 +35,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
             name="data-migration", context=self.portal, request=self.request
         )
         self.request.form['_authenticator'] = createToken()
+        api.content.delete(objects=self.portal.listFolderContents())
 
     def tearDown(self):
         """

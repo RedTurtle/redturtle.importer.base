@@ -23,7 +23,11 @@ USERS = {
         },
         'john': {
             'email': 'jdoe@plone.org',
-            'properties': {'fullname': 'John Doe'},
+            'properties': {
+                'fullname': 'John Doe',
+                'description': 'foo',
+                'home_page': 'http://www.google.it',
+            },
             'roles': ['Member', 'Authenticated'],
         },
     }
@@ -59,7 +63,7 @@ class TestImportUsersAndGroups(unittest.TestCase):
         self.request = self.layer['request']
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
 
-    def test_import_users(self):
+    def test_import_users_a(self):
         with patch.object(
             RedTurtlePlone5MigrationMain,
             'retrieve_json_from_remote',
@@ -89,6 +93,16 @@ class TestImportUsersAndGroups(unittest.TestCase):
             self.assertEqual(
                 john.getProperty('fullname'),
                 USERS['_acl_users']['john']['properties']['fullname'],
+            )
+            self.assertEqual(bob.getProperty('home_page'), '')
+            self.assertEqual(
+                john.getProperty('home_page'),
+                USERS['_acl_users']['john']['properties']['home_page'],
+            )
+            self.assertEqual(bob.getProperty('description'), '')
+            self.assertEqual(
+                john.getProperty('description'),
+                USERS['_acl_users']['john']['properties']['description'],
             )
 
     def test_import_groups(self):

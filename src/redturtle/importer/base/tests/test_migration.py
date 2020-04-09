@@ -107,3 +107,15 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         self.assertEqual(
             api.user.get_users(groupname='Administrators')[0].getId(), 'john'
         )
+
+        bob = api.user.get(username='bob')
+        john = api.user.get(username='john')
+        self.assertEqual(bob.getProperty('email'), 'bob@plone.org')
+        self.assertEqual(bob.getProperty('fullname'), '')
+        self.assertEqual(bob.getProperty('home_page'), '')
+        self.assertEqual(bob.getProperty('description'), '')
+
+        self.assertEqual(john.getProperty('email'), 'jdoe@plone.org')
+        self.assertEqual(john.getProperty('fullname'), 'John Doe')
+        self.assertEqual(john.getProperty('home_page'), 'http://www.plone.org')
+        self.assertEqual(john.getProperty('description'), 'foo')

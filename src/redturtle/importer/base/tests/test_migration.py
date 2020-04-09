@@ -115,7 +115,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         self.assertEqual(bob.getProperty('home_page'), '')
         self.assertEqual(bob.getProperty('description'), '')
 
-        self.assertEqual(bob.getProperty('email'), 'jdoe@plone.org')
-        self.assertEqual(bob.getProperty('fullname'), 'John Doe')
+        self.assertEqual(john.getProperty('email'), 'jdoe@plone.org')
+        self.assertEqual(john.getProperty('fullname'), 'John Doe')
         self.assertEqual(john.getProperty('home_page'), 'http://www.plone.org')
         self.assertEqual(john.getProperty('description'), 'foo')

@@ -6,3 +6,9 @@ class IMigrationContextSteps(Interface):
     """
     Marker interface for specific context steps
     """
+
+
+class IDeserializer(Interface):
+    def __call__(value, filestore, item):
+        """Convert to a field value
+        """

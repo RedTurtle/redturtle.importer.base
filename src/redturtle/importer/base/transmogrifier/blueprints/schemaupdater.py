@@ -5,7 +5,7 @@ from collective.transmogrifier.interfaces import ISectionBlueprint
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IMutableUUID
-from transmogrify.dexterity.interfaces import IDeserializer
+from redturtle.importer.base.interfaces import IDeserializer
 from z3c.form import interfaces
 from z3c.relationfield.interfaces import IRelationChoice
 from z3c.relationfield.interfaces import IRelationList

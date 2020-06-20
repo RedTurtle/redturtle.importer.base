@@ -1,0 +1,25 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="redturtle.importer.base"
+  xmlns:zcml="http://namespaces.zope.org/zcml">
+
+  <adapter factory=".named_file.NamedFileDeserializer" />
+
+  <adapter factory=".rich_text.RichTextDeserializer" />
+
+  <adapter factory=".object.ObjectDeserializer" />
+
+  <adapter factory=".collection.CollectionDeserializer" />
+
+  <adapter factory=".datetime.DatetimeDeserializer" />
+
+  <adapter factory=".default.DefaultDeserializer" />
+
+  <configure zcml:condition="installed plone.app.intid">
+      <configure zcml:condition="installed z3c.relationfield">
+          <adapter factory=".relation.RelationDeserializer" />
+          <adapter factory=".relation.RelationListDeserializer" />
+      </configure>
+  </configure>
+
+</configure>

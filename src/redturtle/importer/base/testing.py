@@ -7,12 +7,10 @@ from plone.app.testing import PloneSandboxLayer
 from plone.testing import z2
 from time import sleep
 
-import collective.jsonmigrator
 import collective.transmogrifier
 import redturtle.importer.base
 import six
 import sys
-import transmogrify.dexterity
 
 
 class RedturtleImporterBaseLayer(PloneSandboxLayer):
@@ -24,10 +22,8 @@ class RedturtleImporterBaseLayer(PloneSandboxLayer):
         # The z3c.autoinclude feature is disabled in the Plone fixture base
         # layer.
 
-        self.loadZCML(package=collective.jsonmigrator)
         self.loadZCML(package=collective.transmogrifier)
         self.loadZCML(package=redturtle.importer.base)
-        self.loadZCML(package=transmogrify.dexterity)
 
     def setUp(self):
         """
@@ -52,13 +48,13 @@ REDTURTLE_IMPORTER_BASE_FIXTURE = RedturtleImporterBaseLayer()
 
 REDTURTLE_IMPORTER_BASE_INTEGRATION_TESTING = IntegrationTesting(
     bases=(REDTURTLE_IMPORTER_BASE_FIXTURE,),
-    name='RedturtleImporterBaseLayer:IntegrationTesting',
+    name="RedturtleImporterBaseLayer:IntegrationTesting",
 )
 
 
 REDTURTLE_IMPORTER_BASE_FUNCTIONAL_TESTING = FunctionalTesting(
     bases=(REDTURTLE_IMPORTER_BASE_FIXTURE,),
-    name='RedturtleImporterBaseLayer:FunctionalTesting',
+    name="RedturtleImporterBaseLayer:FunctionalTesting",
 )
 
 
@@ -68,5 +64,5 @@ REDTURTLE_IMPORTER_BASE_ACCEPTANCE_TESTING = FunctionalTesting(
         REMOTE_LIBRARY_BUNDLE_FIXTURE,
         z2.ZSERVER_FIXTURE,
     ),
-    name='RedturtleImporterBaseLayer:AcceptanceTesting',
+    name="RedturtleImporterBaseLayer:AcceptanceTesting",
 )

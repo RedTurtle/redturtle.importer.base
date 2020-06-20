@@ -12,9 +12,9 @@ from plone.memoize.view import memoize
 from plone.outputfilters.filters.resolveuid_and_caption import resolveuid_re
 from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
+from redturtle.importer.base.interfaces import IDeserializer
 from redturtle.importer.base.utils import get_additional_config
 from redturtle.importer.base.utils import get_transmogrifier_configuration
-from transmogrify.dexterity.interfaces import IDeserializer
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
@@ -54,7 +54,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             obj = api.content.get(path)
             if not obj:
                 logger.warning(
-                    '[FIX RELATIONS] - Unable to find {path}. No relations fixed.'.format(  # noqa
+                    "[FIX RELATIONS] - Unable to find {path}. No relations fixed.".format(  # noqa
                         path=path
                     )
                 )
@@ -187,11 +187,11 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.write_broken_links(broken_urls)
 
     def write_broken_links(self, paths):
-        section = self.transmogrifier.get('results')
+        section = self.transmogrifier.get("results")
         if section is None:
             logger.warning(
                 '"results" section not found in transmogrifier configuration.'
-                ' Unable to write broken links file.'
+                " Unable to write broken links file."
             )
             return
         file_name = section.get("broken-links-tiny")
@@ -205,8 +205,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
 
     def check_link_exist(self, link, link_path):
         result = True
-        section = self.transmogrifier.get('catalogsource')
-        remote_site = section.get('remote-root')
+        section = self.transmogrifier.get("catalogsource")
+        remote_site = section.get("remote-root")
         try:
             if remote_site not in link_path:
                 return True
@@ -250,26 +250,26 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.write_noreference_links(noreference_urls)
 
     def write_noreference_links(self, paths):
-        section = self.transmogrifier.get('results')
-        file_name = section.get('noreference-links')
-        file_path = '{dir}/{portal_id}_{file_name}'.format(
-            dir=section.get('migration-dir'),
+        section = self.transmogrifier.get("results")
+        file_name = section.get("noreference-links")
+        file_path = "{dir}/{portal_id}_{file_name}".format(
+            dir=section.get("migration-dir"),
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
-        with open(file_path, 'w') as fp:
+        with open(file_path, "w") as fp:
             json.dump(paths, fp)
 
     def import_users_and_groups(self):
-        section = self.transmogrifier.get('users_and_groups')
+        section = self.transmogrifier.get("users_and_groups")
         if section is None:
             return
         logger.info("-- Import users and groups from file --")
         import_users = self.get_boolean_value(
-            section=section, name='import-users'
+            section=section, name="import-users"
         )
         import_groups = self.get_boolean_value(
-            section=section, name='import-groups'
+            section=section, name="import-groups"
         )
         if import_users:
             self.import_users()
@@ -277,69 +277,69 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             self.import_groups()
 
     def get_boolean_value(self, section, name):
-        value = section.get(name, 'false').lower()
-        return value == 'true' or value == '1'
+        value = section.get(name, "false").lower()
+        return value == "true" or value == "1"
 
     def retrieve_json_from_remote(self, view_name):
-        section = self.transmogrifier.get('catalogsource')
-        url = section.get('remote-url', '')
-        root = section.get('remote-root', '')
+        section = self.transmogrifier.get("catalogsource")
+        url = section.get("remote-url", "")
+        root = section.get("remote-root", "")
         if not url or not root:
             logger.warning(
-                'Unable to call remote for retrieving {view_name}. Missing remote-url or remote-root in configuration.'.format(  # noqa
+                "Unable to call remote for retrieving {view_name}. Missing remote-url or remote-root in configuration.".format(  # noqa
                     view_name=view_name
                 )
             )
             return
         url = "{url}{root}/{view_name}".format(
-            url=section.get('remote-url'),
-            root=section.get('remote-root'),
+            url=section.get("remote-url"),
+            root=section.get("remote-root"),
             view_name=view_name,
         )
         resp = requests.get(
             url,
             auth=(
-                section.get('remote-username'),
-                section.get('remote-password'),
+                section.get("remote-username"),
+                section.get("remote-password"),
             ),
         )
         if resp.ok and resp.status_code == 200:
             return resp.json()
         logger.warning(
-            'Unable to call {url}: {reason} ({code})'.format(
+            "Unable to call {url}: {reason} ({code})".format(
                 url=url, reason=resp.reason, code=resp.status_code
             )
         )
 
     def import_users(self):
-        json_data = self.retrieve_json_from_remote(view_name='export_users')
+        json_data = self.retrieve_json_from_remote(view_name="export_users")
         if not json_data:
             return
-        if '_acl_users' not in json_data:
+        if "_acl_users" not in json_data:
             logger.warning(
-                'Unable to import users: data format not correct: {}'.format(
+                "Unable to import users: data format not correct: {}".format(
                     json_data
                 )
             )
             return
-        for userid, data in json_data['_acl_users'].items():
+        for userid, data in json_data["_acl_users"].items():
             user = api.user.get(username=userid)
-            roles = data['roles']
+            roles = data["roles"]
             # remove these roles, they cannot be granted
-            if 'Authenticated' in data['roles']:
-                roles.remove('Authenticated')
-            if 'Anonymous' in data['roles']:
-                roles.remove('Anonymous')
-            if not data['email']:
-                data['email'] = 'user@site.com'
+            if "Authenticated" in data["roles"]:
+                roles.remove("Authenticated")
+            if "Anonymous" in data["roles"]:
+                roles.remove("Anonymous")
+            if not data["email"]:
+                data["email"] = "user@site.com"
             if user:
                 api.user.grant_roles(username=userid, roles=roles)
                 continue
             try:
                 user = api.user.create(
                     username=userid,
-                    email=data['email'],
-                    properties=data.get('properties', {}),
+                    email=data["email"],
+                    properties=data.get("properties", {}),
                 )
                 api.user.grant_roles(username=userid, roles=roles)
             except ValueError as e:
@@ -348,34 +348,34 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 )
 
     def import_groups(self):
-        json_data = self.retrieve_json_from_remote(view_name='export_groups')
+        json_data = self.retrieve_json_from_remote(view_name="export_groups")
         if not json_data:
             return
-        if '_acl_groups' not in json_data:
+        if "_acl_groups" not in json_data:
             logger.warning(
-                'Unable to import groups: data format not correct: {}'.format(
+                "Unable to import groups: data format not correct: {}".format(
                     json_data
                 )
             )
             return
-        group_tool = api.portal.get_tool(name='portal_groups')
-        for groupid, props in json_data['_acl_groups'].items():
+        group_tool = api.portal.get_tool(name="portal_groups")
+        for groupid, props in json_data["_acl_groups"].items():
             acl_group = api.group.get(groupname=groupid)
             if not acl_group:
                 acl_group = api.group.create(
                     groupname=groupid,
-                    title=props['title'],
-                    description=props['description'],
-                    roles=props['roles'],
+                    title=props["title"],
+                    description=props["description"],
+                    roles=props["roles"],
                 )
             else:
                 group_tool.editGroup(
                     groupid,
-                    roles=props['roles'],
-                    title=props['title'],
-                    description=props['description'],
+                    roles=props["roles"],
+                    title=props["title"],
+                    description=props["description"],
                 )
-            for member in props['members']:
+            for member in props["members"]:
                 acl_group.addMember(member)
 
 
@@ -392,10 +392,10 @@ class MigrationResults(BrowserView):
     def get_results(self):
 
         in_json = self.get_json_data(
-            option='file-name-in', section_id="catalogsource"
+            option="file-name-in", section_id="catalogsource"
         )
         out_json = self.get_json_data(
-            option='file-name-out', section_id="results"
+            option="file-name-out", section_id="results"
         )
 
         results = {
@@ -422,46 +422,46 @@ class MigrationResults(BrowserView):
     def get_json_data(self, option, section_id):
         config = self.transmogrifier_conf
         section = config.get(section_id, None)
-        file_name = section.get(option, '')
+        file_name = section.get(option, "")
         if not file_name:
             return []
-        file_path = '{dir}/{portal_id}_{file_name}'.format(
-            dir=section.get('migration-dir'),
+        file_path = "{dir}/{portal_id}_{file_name}".format(
+            dir=section.get("migration-dir"),
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
         if os.path.exists(file_path):
-            with open(file_path, 'r') as fp:
+            with open(file_path, "r") as fp:
                 return json.loads(fp.read())
         else:
             return {}
 
     def get_broken_links(self):
         config = self.transmogrifier_conf
-        section = config.get('results', None)
-        file_name = section.get('broken-links-tiny')
-        file_path = '{dir}/{portal_id}_{file_name}'.format(
-            dir=section.get('migration-dir'),
+        section = config.get("results", None)
+        file_name = section.get("broken-links-tiny")
+        file_path = "{dir}/{portal_id}_{file_name}".format(
+            dir=section.get("migration-dir"),
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
         if os.path.exists(file_path):
-            with open(file_path, 'r') as fp:
+            with open(file_path, "r") as fp:
                 return json.loads(fp.read())
         else:
             return []
 
     def get_noreference_links(self):
         config = self.transmogrifier_conf
-        section = config.get('results', None)
-        file_name = section.get('noreference-links')
-        file_path = '{dir}/{portal_id}_{file_name}'.format(
-            dir=section.get('migration-dir'),
+        section = config.get("results", None)
+        file_name = section.get("noreference-links")
+        file_path = "{dir}/{portal_id}_{file_name}".format(
+            dir=section.get("migration-dir"),
             portal_id=api.portal.get().getId(),
             file_name=file_name,
         )
         if os.path.exists(file_path):
-            with open(file_path, 'r') as fp:
+            with open(file_path, "r") as fp:
                 return json.loads(fp.read())
         else:
             return []

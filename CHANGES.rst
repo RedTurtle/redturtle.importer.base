@@ -8,7 +8,8 @@ Changelog
   [cekk]
 - Allow to import users and groups.
   [cekk]
-
+- Remove unmaintained dependencies and move needed code here.
+  [cekk]
 
 1.0.5 (2019-03-19)
 ------------------

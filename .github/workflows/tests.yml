@@ -10,7 +10,7 @@ jobs:
       plone:
         image: plone:4.3
         ports:
-          - 8085:8085
+          - 8085:8080
         env:
           SITE: Plone
           PLONE_ADDONS: redturtle.exporter.base

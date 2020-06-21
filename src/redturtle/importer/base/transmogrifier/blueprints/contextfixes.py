@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
 from redturtle.importer.base.interfaces import IMigrationContextSteps
 from zope.interface import provider
 from zope.interface import implementer

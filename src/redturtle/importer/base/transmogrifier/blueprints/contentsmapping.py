@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultKeys
-from collective.transmogrifier.utils import defaultMatcher
-from collective.transmogrifier.utils import Matcher
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultKeys
+from redturtle.importer.base.transmogrifier.utils import defaultMatcher
+from redturtle.importer.base.transmogrifier.utils import Matcher
 from redturtle.importer.base import logger
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import provider
@@ -107,8 +107,8 @@ class ContentsMappingSection(object):
             if skip:
                 if item.get("_uid") in self.items_in:
                     self.items_in[item.get("_uid")][
-                        'reason'
-                    ] = 'Skipped portal_type'
+                        "reason"
+                    ] = "Skipped portal_type"
                 else:
                     self.items_in[item.get("_uid")] = {
                         "id": item.get("_id"),

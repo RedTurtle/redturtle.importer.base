@@ -46,7 +46,6 @@ setup(
         "setuptools",
         "z3c.jbot",
         "z3c.unconfigure",
-        "collective.transmogrifier",
     ],
     extras_require={
         "test": [

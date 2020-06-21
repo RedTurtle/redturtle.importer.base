@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
 from plone.dexterity.utils import iterSchemata
 from redturtle.importer.base.interfaces import IDeserializer
 from redturtle.importer.base import logger

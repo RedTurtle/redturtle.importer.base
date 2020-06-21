@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from Acquisition import aq_base
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultMatcher
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultMatcher
 from zope.container.contained import notifyContainerModified
 from zope.interface import provider
 from zope.interface import implementer
@@ -53,9 +53,9 @@ class OrderSection(object):
             for pos, key in enumerate(ordered_keys):
                 normalized_positions[key] = pos
 
-            # TODO: After the new collective.transmogrifier release (>1.4), the
+            # TODO: After the new redturtle.importer.base release (>1.4), the
             # utils.py provides a traverse method.
-            from collective.transmogrifier.utils import traverse
+            from redturtle.importer.base.transmogrifier.utils import traverse
 
             parent = traverse(self.context, path)
             # parent = self.context.unrestrictedTraverse(path.lstrip('/'))

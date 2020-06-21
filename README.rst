@@ -15,10 +15,16 @@ Dependencies
 This product is made over other useful tools:
 
 * `collective.jsonmigrator`__
+* `collective.transmogrifier`__
 * `transmigrify.dexterity`__
 
 __ https://github.com/collective/collective.jsonmigrator
+__ https://github.com/collective/collective.transmogrifier
 __ https://github.com/collective/transmogrify.dexterity
+
+These tools are not yet actively maintained, so we moved useful parts into this
+project to have a working Python 3 importer based on transmogrifier.
+
 
 Features
 ========

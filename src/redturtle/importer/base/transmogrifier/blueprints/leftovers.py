@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultKeys
-from collective.transmogrifier.utils import Matcher
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultKeys
+from redturtle.importer.base.transmogrifier.utils import Matcher
 from DateTime import DateTime
 from dateutil.parser import parse
 from plone.dexterity.interfaces import IDexterityContent

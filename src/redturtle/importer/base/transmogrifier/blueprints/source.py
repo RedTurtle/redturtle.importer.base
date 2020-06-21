@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
 from datetime import datetime
 from plone import api
 from zope.interface import provider
@@ -208,8 +208,8 @@ class CachedCatalogSourceSection(object):
                     url=item_url, code=resp.status_code
                 )
             )
-            self.items_in[path] = {'path': path, 'reason': resp.status_code}
-            self.errored.append({'path': path, 'reason': resp.status_code})
+            self.items_in[path] = {"path": path, "reason": resp.status_code}
+            self.errored.append({"path": path, "reason": resp.status_code})
             return None
         try:
             item = resp.json()
@@ -219,19 +219,19 @@ class CachedCatalogSourceSection(object):
                     url=item_url
                 )
             )
-            self.items_in[path] = {'path': path, 'reason': resp.status_code}
-            self.errored.append({'path': path, 'reason': resp.status_code})
+            self.items_in[path] = {"path": path, "reason": resp.status_code}
+            self.errored.append({"path": path, "reason": resp.status_code})
             return None
-        if self.skip_private and item.get('is_private', False):
+        if self.skip_private and item.get("is_private", False):
             logger.warning(
-                "[SKIPPED] - {path}: Private item.".format(path=item['_path'])
+                "[SKIPPED] - {path}: Private item.".format(path=item["_path"])
             )
             info = {
-                'id': item.get('_id'),
-                'portal_type': item.get('_type'),
-                'title': item.get('title'),
-                'path': path,
-                'reason': 'Private item',
+                "id": item.get("_id"),
+                "portal_type": item.get("_type"),
+                "title": item.get("title"),
+                "path": path,
+                "reason": "Private item",
             }
             self.items_in[path] = info
             self.errored.append(info)

@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
+from plone import api
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.utils import iterSchemata
 from plone.uuid.interfaces import IMutableUUID
 from redturtle.importer.base.interfaces import IDeserializer
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultMatcher
+from redturtle.importer.base.transmogrifier.utils import Expression
 from z3c.form import interfaces
 from z3c.relationfield.interfaces import IRelationChoice
 from z3c.relationfield.interfaces import IRelationList
+from zope.annotation.interfaces import IAnnotations
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 from zope.event import notify
-from zope.interface import provider
 from zope.interface import implementer
+from zope.interface import provider
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
-from collective.transmogrifier.utils import defaultMatcher
-from collective.transmogrifier.utils import Expression
-from zope.annotation.interfaces import IAnnotations
 
 import logging
 
@@ -57,8 +58,9 @@ class DexterityUpdateSection(object):
             self.log = lambda s: self.logger.log(self.loglevel, s)
         else:
             self.log = None
-
-        self.errored = IAnnotations(transmogrifier).setdefault(ERROREDKEY, [])
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
+            ERROREDKEY, []
+        )
 
     def __iter__(self):  #  noqa
         # need to be refactored

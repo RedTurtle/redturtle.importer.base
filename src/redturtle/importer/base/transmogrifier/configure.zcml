@@ -5,15 +5,14 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     i18n_domain="redturtle.importer.base">
 
-  <!-- Importer configuration -->
-  <include package="collective.transmogrifier" file="meta.zcml" />
+  <adapter
+      factory=".transmogrifier.Transmogrifier"
+      provides="redturtle.importer.base.interfaces.ITransmogrifier"
+      />
+      
   <include package=".blueprints" />
   <include package=".converters" />
+
   
-  <transmogrifier:registerConfig
-    name="redturtlePlone5Main"
-    title="Migration configuration for querying the catalog of a Plone site"
-    configuration="redturtleplone5.cfg"
-    />
 
 </configure>

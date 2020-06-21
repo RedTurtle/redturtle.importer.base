@@ -7,7 +7,6 @@ from plone.app.testing import PloneSandboxLayer
 from plone.testing import z2
 from time import sleep
 
-import collective.transmogrifier
 import redturtle.importer.base
 import six
 import sys
@@ -22,7 +21,6 @@ class RedturtleImporterBaseLayer(PloneSandboxLayer):
         # The z3c.autoinclude feature is disabled in the Plone fixture base
         # layer.
 
-        self.loadZCML(package=collective.transmogrifier)
         self.loadZCML(package=redturtle.importer.base)
 
     def setUp(self):

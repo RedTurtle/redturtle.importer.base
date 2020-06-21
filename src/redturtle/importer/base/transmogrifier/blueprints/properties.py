@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from Acquisition import aq_base
 from Products.CMFPlone.utils import safe_unicode
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultKeys
-from collective.transmogrifier.utils import Matcher
-from collective.transmogrifier.utils import traverse
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultKeys
+from redturtle.importer.base.transmogrifier.utils import Matcher
+from redturtle.importer.base.transmogrifier.utils import traverse
 from ZODB.POSException import ConflictError
 from zope.interface import provider
 from zope.interface import implementer

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultMatcher
-from collective.transmogrifier.utils import traverse
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultMatcher
+from redturtle.importer.base.transmogrifier.utils import traverse
 from Products.CMFCore.CMFCatalogAware import CMFCatalogAware as CatalogAware
 from zope.interface import provider, implementer
 

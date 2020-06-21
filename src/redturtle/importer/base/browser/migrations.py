@@ -2,7 +2,9 @@
 from __future__ import print_function
 from AccessControl import Unauthorized
 from Acquisition import aq_base
-from collective.transmogrifier.transmogrifier import Transmogrifier
+from redturtle.importer.base.transmogrifier.transmogrifier import (
+    Transmogrifier,
+)
 from lxml import etree
 from plone import api
 from plone.app.textfield import RichText
@@ -13,8 +15,10 @@ from plone.outputfilters.filters.resolveuid_and_caption import resolveuid_re
 from Products.Five.browser import BrowserView
 from redturtle.importer.base import logger
 from redturtle.importer.base.interfaces import IDeserializer
-from redturtle.importer.base.utils import get_additional_config
-from redturtle.importer.base.utils import get_transmogrifier_configuration
+from redturtle.importer.base.transmogrifier.utils import (
+    get_additional_config,
+    get_transmogrifier_configuration,
+)
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder

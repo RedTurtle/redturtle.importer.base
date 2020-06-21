@@ -4,13 +4,12 @@ from redturtle.importer.base.interfaces import ISectionBlueprint
 from zope.interface import provider
 from zope.interface import implementer
 
-import logging
 import transaction
 
 
-@implementer(ISection)
 @provider(ISectionBlueprint)
-class CommitSection(object):
+@implementer(ISection)
+class SavepointSection(object):
     def __init__(self, transmogrifier, name, options, previous):
         self.every = int(options.get("every", 1000))
         self.previous = previous
@@ -21,6 +20,4 @@ class CommitSection(object):
             count = (count + 1) % self.every
             if count == 0:
                 transaction.savepoint(optimistic=True)
-                logging.info("Committing changes!")
-                transaction.commit()
             yield item

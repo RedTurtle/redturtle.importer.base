@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from Products.CMFPlone.utils import safe_unicode
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import defaultKeys
-from collective.transmogrifier.utils import Matcher
-from collective.transmogrifier.utils import traverse
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultKeys
+from redturtle.importer.base.transmogrifier.utils import Matcher
+from redturtle.importer.base.transmogrifier.utils import traverse
 from Products.CMFCore.utils import getToolByName
 from zope.interface import provider
 from zope.interface import implementer
@@ -24,18 +24,18 @@ class Owner(object):
         self.options = options
         self.previous = previous
         self.context = transmogrifier.context
-        self.memtool = getToolByName(self.context, 'portal_membership')
+        self.memtool = getToolByName(self.context, "portal_membership")
 
-        if 'path-key' in options:
-            pathkeys = options['path-key'].splitlines()
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
         else:
-            pathkeys = defaultKeys(options['blueprint'], name, 'path')
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
         self.pathkey = Matcher(*pathkeys)
 
-        if 'owner-key' in options:
-            ownerkeys = options['owner-key'].splitlines()
+        if "owner-key" in options:
+            ownerkeys = options["owner-key"].splitlines()
         else:
-            ownerkeys = defaultKeys(options['blueprint'], name, 'owner')
+            ownerkeys = defaultKeys(options["blueprint"], name, "owner")
         self.ownerkey = Matcher(*ownerkeys)
 
     def __iter__(self):
@@ -43,8 +43,9 @@ class Owner(object):
             pathkey = self.pathkey(*list(item.keys()))[0]
             ownerkey = self.ownerkey(*list(item.keys()))[0]
 
-            if not pathkey or not ownerkey or \
-               ownerkey not in item:    # not enough info
+            if (
+                not pathkey or not ownerkey or ownerkey not in item
+            ):  # not enough info
                 yield item
                 continue
 
@@ -53,9 +54,9 @@ class Owner(object):
                 yield item
                 continue
 
-            path = safe_unicode(item[pathkey].lstrip('/'))
+            path = safe_unicode(item[pathkey].lstrip("/"))
             if six.PY2 and isinstance(path, six.text_type):
-                path = path.encode('ascii')
+                path = path.encode("ascii")
             obj = traverse(self.context, path, None)
 
             if obj is None:
@@ -65,22 +66,29 @@ class Owner(object):
             if item[ownerkey][0] and item[ownerkey][1]:
                 try:
                     obj.changeOwnership(
-                        self.memtool.getMemberById(item[ownerkey][1]))
+                        self.memtool.getMemberById(item[ownerkey][1])
+                    )
                 except Exception as e:
-                    raise Exception('ERROR: %s SETTING OWNERSHIP TO %s' %
-                                    (str(e), item[pathkey]))
+                    raise Exception(
+                        "ERROR: %s SETTING OWNERSHIP TO %s"
+                        % (str(e), item[pathkey])
+                    )
 
                 try:
-                    obj.manage_setLocalRoles(item[ownerkey][1], ['Owner'])
+                    obj.manage_setLocalRoles(item[ownerkey][1], ["Owner"])
                 except Exception as e:
-                    raise Exception('ERROR: %s SETTING OWNERSHIP2 TO %s' %
-                                    (str(e), item[pathkey]))
+                    raise Exception(
+                        "ERROR: %s SETTING OWNERSHIP2 TO %s"
+                        % (str(e), item[pathkey])
+                    )
 
             elif not item[ownerkey][0] and item[ownerkey][1]:
                 try:
                     obj._owner = item[ownerkey][1]
                 except Exception as e:
-                    raise Exception('ERROR: %s SETTING __OWNERSHIP TO %s' %
-                                    (str(e), item[pathkey]))
+                    raise Exception(
+                        "ERROR: %s SETTING __OWNERSHIP TO %s"
+                        % (str(e), item[pathkey])
+                    )
 
             yield item

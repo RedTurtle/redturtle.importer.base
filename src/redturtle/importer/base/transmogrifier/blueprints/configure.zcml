@@ -101,4 +101,16 @@
       name="redturtle.importer.base.sections.reindexobject"
       />
       
+    <utility
+      component=".manipulator.ManipulatorSection"
+      name="redturtle.importer.base.sections.manipulator"
+      />
+    <utility
+      component=".folders.FoldersSection"
+      name="redturtle.importer.base.sections.folders"
+      />
+    <utility
+      component=".savepoint.SavepointSection"
+      name="redturtle.importer.base.sections.savepoint"
+      />
 </configure>

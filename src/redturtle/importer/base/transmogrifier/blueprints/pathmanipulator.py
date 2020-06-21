@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import Condition
-from collective.transmogrifier.utils import Expression
+from plone import api
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import Condition
+from redturtle.importer.base.transmogrifier.utils import Expression
 from redturtle.importer.base import logger
 from six.moves import zip
 from zope.annotation.interfaces import IAnnotations
@@ -57,7 +58,7 @@ class PathManipulator(object):
 
         self.available_operators = ["*", "", "="]
 
-        self.anno = IAnnotations(transmogrifier)
+        self.anno = IAnnotations(api.portal.get().REQUEST)
         self.storage = self.anno.setdefault(VALIDATIONKEY, [])
 
     def __iter__(self):

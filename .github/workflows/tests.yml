@@ -9,6 +9,8 @@ jobs:
       # Label used to access the service container
       plone:
         image: plone:4.3
+        ports:
+          - 8080:8080
         env:
           SITE: Plone
           PLONE_ADDONS: redturtle.exporter.base

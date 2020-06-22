@@ -38,7 +38,7 @@ class CachedCatalogSourceSection(object):
         self.context = transmogrifier.context
 
         self.remote_url = self.get_option(
-            "remote-url", "http://localhost:8085"
+            "remote-url", "http://localhost:8080"
         )
         self.remote_username = self.get_option("remote-username", "admin")
         self.remote_password = self.get_option("remote-password", "admin")

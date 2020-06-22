@@ -27,7 +27,7 @@ class RedturtleImporterBaseLayer(PloneSandboxLayer):
         """
         wait until docker image is ready
         """
-        ping_url = "http://127.0.0.1:8085/Plone"
+        ping_url = "http://127.0.0.1:8080/Plone"
         for i in range(1, 10):
             try:
                 result = six.moves.urllib.request.urlopen(ping_url)

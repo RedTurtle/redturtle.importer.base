@@ -113,4 +113,8 @@
       component=".savepoint.SavepointSection"
       name="redturtle.importer.base.sections.savepoint"
       />
+    <utility
+      component=".pamlinker.PAMLinker"
+      name="redturtle.importer.base.sections.pamlinker"
+      />
 </configure>

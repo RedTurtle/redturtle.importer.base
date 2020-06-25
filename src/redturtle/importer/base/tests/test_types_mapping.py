@@ -26,11 +26,11 @@ class TestTypesMapping(unittest.TestCase):
             x for x in subscribers((self.portal, self.request), IPortalTypeMapping)
         ]
         for handler in sorted(handlers, key=lambda h: h.order):
-            item = handler(item=item, portal_type=item["portal_type"])
+            item = handler(item=item, typekey="_type")
         return item
 
     def test_links_internal_link_converter(self):
-        item = {"portal_type": "Link", "internalLink": "foo"}
+        item = {"_type": "Link", "internalLink": "foo"}
 
         result = self.apply_handlers(item=item)
 
@@ -38,7 +38,7 @@ class TestTypesMapping(unittest.TestCase):
         self.assertEqual(result["remoteUrl"], "${portal_url}/resolveuid/foo")
 
     def test_links_external_link_converter(self):
-        item = {"portal_type": "Link", "remoteUrl": "foo"}
+        item = {"_type": "Link", "remoteUrl": "foo"}
 
         result = self.apply_handlers(item=item)
 

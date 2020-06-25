@@ -36,28 +36,8 @@ class LinkMapping(object):
 
 @adapter(IPloneSiteRoot, IBrowserRequest)
 @implementer(IPortalTypeMapping)
-class TopicMapping(object):
-    order = 2
-
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    def __call__(self, item, portal_type):
-        """
-        """
-        if portal_type == "Topic":
-            portal_type = "Collection"
-
-            if item.get("_layout", None):
-                del item["_layout"]
-        return item
-
-
-@adapter(IPloneSiteRoot, IBrowserRequest)
-@implementer(IPortalTypeMapping)
 class CollectionMapping(object):
-    order = 3
+    order = 2
 
     def __init__(self, context, request):
         self.context = context

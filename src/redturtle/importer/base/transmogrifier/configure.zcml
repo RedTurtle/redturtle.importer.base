@@ -18,7 +18,5 @@
     provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
   <subscriber factory=".types_mapping.CollectionMapping"
     provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
-  <subscriber factory=".types_mapping.TopicMapping"
-    provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
 
 </configure>

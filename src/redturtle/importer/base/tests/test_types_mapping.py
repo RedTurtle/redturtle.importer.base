@@ -44,10 +44,3 @@ class TestTypesMapping(unittest.TestCase):
 
         self.assertIn("remoteUrl", result.keys())
         self.assertEqual(result["remoteUrl"], "foo")
-
-    def test_topics_converter(self):
-        item = {"portal_type": "Topic"}
-
-        result = self.apply_handlers(item=item)
-
-        self.assertEqual(result["portal_type"], "Collection")

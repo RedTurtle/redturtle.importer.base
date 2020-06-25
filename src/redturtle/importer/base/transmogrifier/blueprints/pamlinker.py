@@ -65,9 +65,7 @@ class PAMLinker(object):
                     for lang in item["_translations"]:
                         target_obj = self.context.unrestrictedTraverse(
                             str(
-                                "{0}{1}".format(
-                                    lang, item["_translations"][lang]
-                                )
+                                "{0}{1}".format(lang, item["_translations"][lang])
                             ).lstrip("/"),
                             None,
                         )  # noqa

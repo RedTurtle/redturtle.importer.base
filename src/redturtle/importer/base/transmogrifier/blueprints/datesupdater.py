@@ -7,6 +7,8 @@ from redturtle.importer.base.transmogrifier.utils import traverse
 from zope.interface import provider
 from zope.interface import implementer
 
+EMPTY_VALUE = "None"
+
 
 @provider(ISectionBlueprint)
 @implementer(ISection)
@@ -31,17 +33,14 @@ class DatesUpdater(object):
         self.context = transmogrifier.context
 
         self.pathkey = defaultMatcher(options, "path-key", name, "path")
-        self.creationkey = options.get("creation-key", "creation_date")
-        self.modificationkey = options.get(
-            "modification-key", "modification_date"
-        )  # noqa
-        self.effectivekey = options.get("effective-key", "effective_date")
-        self.expirationkey = options.get("expiration-key", "expiration_date")
+        self.creationkey = "creation_date"
+        self.modificationkey = "modification_date"
+        self.effectivekey = "effectiveDate"
+        self.expirationkey = "expiration_date"
 
     def __iter__(self):
 
         for item in self.previous:
-
             pathkey = self.pathkey(*list(item.keys()))[0]
             if not pathkey:  # not enough info
                 yield item
@@ -62,7 +61,14 @@ class DatesUpdater(object):
                 ob.modification_date = DateTime(modificationdate)
 
             effectivedate = item.get(self.effectivekey, None)
-            if effectivedate and hasattr(ob, "effective_date"):
+            if not effectivedate:
+                # dexterity one
+                effectivedate = item.get("effective", None)
+            if (
+                effectivedate
+                and effectivedate != EMPTY_VALUE
+                and hasattr(ob, "effective_date")
+            ):
                 ob.effective_date = DateTime(effectivedate)
 
             expirationdate = item.get(self.expirationkey, None)

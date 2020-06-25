@@ -24,7 +24,7 @@ def get_transmogrifier_configuration():
     parser = RawConfigParser()
     parser.optionxform = str  # case sensitive
     with open(base_config_path + "/migration_config.cfg") as fp:
-        parser.readfp(fp)
+        parser.read_file(fp)
     result = {}
     for section in parser.sections():
         result[section] = dict(parser.items(section))
@@ -93,9 +93,7 @@ def constructPipeline(transmogrifier, sections, pipeline=None):
         section_options = transmogrifier[section_id]
         blueprint_id = section_options["blueprint"]
         blueprint = getUtility(ISectionBlueprint, blueprint_id)
-        pipeline = blueprint(
-            transmogrifier, section_id, section_options, pipeline
-        )
+        pipeline = blueprint(transmogrifier, section_id, section_options, pipeline)
         if not ISection.providedBy(pipeline):
             raise ValueError(
                 "Blueprint %s for section %s did not return "
@@ -204,9 +202,7 @@ class Expression(object):
         self.name = name
         self.options = options
         self.extras = extras
-        logger_base = getattr(
-            transmogrifier, "configuration_id", "transmogrifier"
-        )
+        logger_base = getattr(transmogrifier, "configuration_id", "transmogrifier")
         self.logger = getLogger(logger_base + "." + name)
 
     def __call__(self, item, **extras):

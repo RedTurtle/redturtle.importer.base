@@ -25,20 +25,13 @@ class ConstructorSection(object):
         )
         self.pathkey = defaultMatcher(options, "path-key", name, "path")
         self.required = bool(options.get("required"))
-        self.overwrite = options.get("overwrite") in (
-            "true",
-            "True",
-            "1",
-            True,
-            1,
-        )
+        self.overwrite = options.get("overwrite") in ("true", "True", "1", True, 1)
 
     def __iter__(self):
         for item in self.previous:
             keys = list(item.keys())
             typekey = self.typekey(*keys)[0]
             pathkey = self.pathkey(*keys)[0]
-
             if not (typekey and pathkey):
                 logger.warn("Not enough info for item: {0}".format(item))
                 yield item
@@ -70,10 +63,11 @@ class ConstructorSection(object):
 
             if getattr(aq_base(context), id, None) is not None:  # item exists
                 old = context[id]
+                if old.portal_type == "LRF":
+                    # it's a Language root folder: don't touch it
+                    continue
                 if self.overwrite:
-                    logger.info(
-                        "[overwrite] remove object %s", old.absolute_url()
-                    )
+                    logger.info("[overwrite] remove object %s", old.absolute_url())
                     del context[id]
 
                 else:

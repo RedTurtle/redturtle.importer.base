@@ -49,7 +49,7 @@
             <br />
           </tal:section>
         </code>
-        <form action="${context/portal_url}/data-migration" method="GET">
+        <form action="${context/portal_url}/${view/__name__}" method="GET">
           <span tal:replace="structure context/@@authenticator/authenticator"/>
           <div class="formControls">
             <input class="context" type="submit" name="confirm" value="Migrate">

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from redturtle.importer.base.interfaces import IDeserializer
-from redturtle.importer.base.transmogrifier.converters.default import (
+from redturtle.importer.base.transmogrifier.deserializers.default import (
     DefaultDeserializer,
 )
 from zope.component import adapter
@@ -15,9 +15,7 @@ class ObjectDeserializer(object):
     def __init__(self, field):
         self.field = field
 
-    def __call__(
-        self, value, filestore, item, disable_constraints=False, logger=None
-    ):
+    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
         if not isinstance(value, dict):
             raise ValueError("Need a dict to convert")
         if not value.get("_class", None):
@@ -45,8 +43,7 @@ class ObjectDeserializer(object):
         klass = resolve(value["_class"])
         if not self.field.schema.implementedBy(klass):
             raise ValueError(
-                "%s does not implemement %s"
-                % (value["_class"], self.field.schema)
+                "%s does not implemement %s" % (value["_class"], self.field.schema)
             )
         instance = klass()
 

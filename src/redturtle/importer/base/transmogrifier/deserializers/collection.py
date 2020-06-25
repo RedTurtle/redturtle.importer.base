@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from six import string_types
 from redturtle.importer.base.interfaces import IDeserializer
-from redturtle.importer.base.transmogrifier.converters.default import (
+from redturtle.importer.base.transmogrifier.deserializers.default import (
     DefaultDeserializer,
 )
 from zope.component import adapter
@@ -15,9 +15,7 @@ class CollectionDeserializer(object):
     def __init__(self, field):
         self.field = field
 
-    def __call__(
-        self, value, filestore, item, disable_constraints=False, logger=None
-    ):
+    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
         field = self.field
         if value in (None, ""):
             return []
@@ -28,9 +26,7 @@ class CollectionDeserializer(object):
         else:
             deserializer = DefaultDeserializer(None)
         value = [
-            deserializer(
-                v, filestore, item, disable_constraints, logger=logger
-            )
+            deserializer(v, filestore, item, disable_constraints, logger=logger)
             for v in value
         ]
         value = field._type(value)

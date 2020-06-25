@@ -11,8 +11,14 @@
       />
       
   <include package=".blueprints" />
-  <include package=".converters" />
+  <include package=".deserializers" />
 
-  
+  <!-- types mapping -->
+  <subscriber factory=".types_mapping.LinkMapping"
+    provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
+  <subscriber factory=".types_mapping.CollectionMapping"
+    provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
+  <subscriber factory=".types_mapping.TopicMapping"
+    provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
 
 </configure>

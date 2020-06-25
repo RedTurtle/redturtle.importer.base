@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from zope.interface import Attribute
 from zope.interface import Interface
-import zope.interface
 
 
 class IMigrationContextSteps(Interface):
@@ -15,10 +15,10 @@ class IDeserializer(Interface):
         """
 
 
-class ITransmogrifier(zope.interface.Interface):
+class ITransmogrifier(Interface):
     """The transmogrifier transforms objects through a pipeline"""
 
-    context = zope.interface.Attribute("The targeted IFolderish context")
+    context = Attribute("The targeted IFolderish context")
 
     def __call__(self, configuration_id, **overrides):
         """Load and execute the named pipeline configuration
@@ -38,7 +38,7 @@ class ITransmogrifier(zope.interface.Interface):
         """Iterate over all the section names in the pipeline configuration"""
 
 
-class ISectionBlueprint(zope.interface.Interface):
+class ISectionBlueprint(Interface):
     """Blueprints create pipe sections"""
 
     def __call__(transmogrifier, name, options, previous):
@@ -49,7 +49,7 @@ class ISectionBlueprint(zope.interface.Interface):
         """
 
 
-class ISection(zope.interface.Interface):
+class ISection(Interface):
     """A section in a transmogrifier pipe"""
 
     def __iter__():
@@ -57,4 +57,21 @@ class ISection(zope.interface.Interface):
 
         During iteration they process the previous section to produce output
         for the next pipe section.
+        """
+
+
+class IPortalTypeMapping(Interface):
+    """
+    Map an input portal_type into a new one
+    """
+
+    order = Attribute("The order which this adapter is run")
+
+    def __init__(context, request):
+        """Adapts context and the request.
+        """
+
+    def __call__(item):
+        """
+        remap types
         """

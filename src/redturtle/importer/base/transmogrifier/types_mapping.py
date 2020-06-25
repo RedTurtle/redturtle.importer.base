@@ -19,10 +19,10 @@ class LinkMapping(object):
         self.context = context
         self.request = request
 
-    def __call__(self, item, portal_type):
+    def __call__(self, item, typekey):
         """
         """
-        if portal_type == "Link":
+        if item[typekey] == "Link":
             internal_link = item.get("internalLink", "")
             external_link = item.get("remoteUrl", "")
             if internal_link:
@@ -43,12 +43,11 @@ class CollectionMapping(object):
         self.context = context
         self.request = request
 
-    def __call__(self, item, portal_type):
+    def __call__(self, item, typekey):
         """
         """
+        portal_type = item[typekey]
         if portal_type == "Collection":
-            portal_type = "Collection"
-
             if item.get("_layout", None):
                 del item["_layout"]
 

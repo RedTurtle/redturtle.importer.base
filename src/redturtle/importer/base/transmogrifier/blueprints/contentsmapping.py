@@ -77,7 +77,7 @@ class ContentsMappingSection(object):
                 else:
                     self.items_in[item.get("_uid")] = {
                         "id": item.get("_id"),
-                        "portal_type": item.get("_type"),
+                        "portal_type": item[typekey],
                         "title": item.get("title"),
                         "path": item.get("_path"),
                     }
@@ -95,7 +95,7 @@ class ContentsMappingSection(object):
                 )
             ]
             for handler in sorted(handlers, key=lambda h: h.order):
-                item = handler(item=item, portal_type=item[typekey])
+                item = handler(item=item, typekey=typekey)
             if item.get("skipped", False):
                 if item.get("_uid") in self.items_in:
                     self.items_in[item.get("_uid")]["reason"] = item.get(
@@ -104,7 +104,7 @@ class ContentsMappingSection(object):
                 else:
                     self.items_in[item.get("_uid")] = {
                         "id": item.get("_id"),
-                        "portal_type": item.get("_type"),
+                        "portal_type": item[typekey],
                         "title": item.get("title"),
                         "path": item.get("_path"),
                     }

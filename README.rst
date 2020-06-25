@@ -125,11 +125,12 @@ And then you need to create the class::
             self.context = context
             self.request = request
 
-        def __call__(self, item, portal_type):
+        def __call__(self, item, typekey):
             """
             """
+            portal_type = item[typekey]
             if portal_type == "Type-A":
-                item['portal_type'] = "Type-B"
+                item[typekey] = "Type-B"
                 ...
             return item
 

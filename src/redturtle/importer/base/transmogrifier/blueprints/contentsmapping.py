@@ -87,7 +87,6 @@ class ContentsMappingSection(object):
                 logger.warning("Not enough info for item: {0}".format(item))
                 yield item
                 continue
-
             # custom types mappings
             handlers = [
                 x
@@ -97,5 +96,18 @@ class ContentsMappingSection(object):
             ]
             for handler in sorted(handlers, key=lambda h: h.order):
                 item = handler(item=item, portal_type=item[typekey])
+            if item.get("skipped", False):
+                if item.get("_uid") in self.items_in:
+                    self.items_in[item.get("_uid")]["reason"] = item.get(
+                        "skipped_message", ""
+                    )
+                else:
+                    self.items_in[item.get("_uid")] = {
+                        "id": item.get("_id"),
+                        "portal_type": item.get("_type"),
+                        "title": item.get("title"),
+                        "path": item.get("_path"),
+                    }
+                continue
 
             yield item

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Setup tests for this package."""
 from App.Common import package_home
+from DateTime import DateTime
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone import api
@@ -14,7 +15,7 @@ import unittest
 
 
 def get_config_file_path(filename):
-    return os.path.join(package_home(globals()), 'custom_configs', filename)
+    return os.path.join(package_home(globals()), "custom_configs", filename)
 
 
 class TestBaseMigrationSucceed(unittest.TestCase):
@@ -28,13 +29,13 @@ class TestBaseMigrationSucceed(unittest.TestCase):
 
     def setUp(self):
         """Custom shared utility setup for tests."""
-        self.portal = self.layer['portal']
-        self.request = self.layer['request']
-        setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        self.portal = self.layer["portal"]
+        self.request = self.layer["request"]
+        setRoles(self.portal, TEST_USER_ID, ["Manager"])
         self.migration_view = api.content.get_view(
             name="data-migration", context=self.portal, request=self.request
         )
-        self.request.form['_authenticator'] = createToken()
+        self.request.form["_authenticator"] = createToken()
         api.content.delete(objects=self.portal.listFolderContents())
 
     def tearDown(self):
@@ -44,7 +45,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         api.content.delete(objects=self.portal.listFolderContents())
 
     def test_base_migration_succeed(self):
-        pc = api.portal.get_tool(name='portal_catalog')
+        pc = api.portal.get_tool(name="portal_catalog")
         self.assertEqual(len(pc()), 0)
 
         self.migration_view.do_migrate()
@@ -65,10 +66,20 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         self.assertEqual(len(images), 1)
         self.assertEqual(len(events), 1)
 
+    def test_correctly_set_dates(self):
+        del os.environ["MIGRATION_FILE_PATH"]
+        self.migration_view.do_migrate()
+
+        published_document = api.content.get("/plone/first-document")
+        private_document = api.content.find(
+            portal_type="Document", review_state="private"
+        )[0]
+
+        self.assertEqual(published_document.effective().Date(), DateTime().Date())
+        self.assertEqual(private_document.effective.Date(), "1969/12/31")
+
     def test_do_not_migrate_private_contents(self):
-        os.environ["MIGRATION_FILE_PATH"] = get_config_file_path(
-            'skip_private.cfg'
-        )
+        os.environ["MIGRATION_FILE_PATH"] = get_config_file_path("skip_private.cfg")
         self.migration_view.do_migrate()
 
         documents = api.content.find(portal_type="Document")
@@ -91,7 +102,7 @@ class TestBaseMigrationSucceed(unittest.TestCase):
 
     def test_import_users_and_groups(self):
         os.environ["MIGRATION_FILE_PATH"] = get_config_file_path(
-            'import_users_and_groups.cfg'
+            "import_users_and_groups.cfg"
         )
 
         self.assertEqual(len(api.user.get_users()), 1)
@@ -101,21 +112,19 @@ class TestBaseMigrationSucceed(unittest.TestCase):
 
         self.assertEqual(len(api.user.get_users()), 3)
         self.assertEqual(len(api.group.get_groups()), 5)
+        self.assertEqual(api.user.get_users(groupname="staff")[0].getId(), "bob")
         self.assertEqual(
-            api.user.get_users(groupname='staff')[0].getId(), 'bob'
-        )
-        self.assertEqual(
-            api.user.get_users(groupname='Administrators')[0].getId(), 'john'
+            api.user.get_users(groupname="Administrators")[0].getId(), "john"
         )
 
-        bob = api.user.get(username='bob')
-        john = api.user.get(username='john')
-        self.assertEqual(bob.getProperty('email'), 'bob@plone.org')
-        self.assertEqual(bob.getProperty('fullname'), '')
-        self.assertEqual(bob.getProperty('home_page'), '')
-        self.assertEqual(bob.getProperty('description'), '')
+        bob = api.user.get(username="bob")
+        john = api.user.get(username="john")
+        self.assertEqual(bob.getProperty("email"), "bob@plone.org")
+        self.assertEqual(bob.getProperty("fullname"), "")
+        self.assertEqual(bob.getProperty("home_page"), "")
+        self.assertEqual(bob.getProperty("description"), "")
 
-        self.assertEqual(john.getProperty('email'), 'jdoe@plone.org')
-        self.assertEqual(john.getProperty('fullname'), 'John Doe')
-        self.assertEqual(john.getProperty('home_page'), 'http://www.plone.org')
-        self.assertEqual(john.getProperty('description'), 'foo')
+        self.assertEqual(john.getProperty("email"), "jdoe@plone.org")
+        self.assertEqual(john.getProperty("fullname"), "John Doe")
+        self.assertEqual(john.getProperty("home_page"), "http://www.plone.org")
+        self.assertEqual(john.getProperty("description"), "foo")

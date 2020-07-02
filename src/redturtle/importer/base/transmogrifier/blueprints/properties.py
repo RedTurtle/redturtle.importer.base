@@ -1,0 +1,89 @@
+# -*- coding: utf-8 -*-
+from Acquisition import aq_base
+from Products.CMFPlone.utils import safe_unicode
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import defaultKeys
+from redturtle.importer.base.transmogrifier.utils import Matcher
+from redturtle.importer.base.transmogrifier.utils import traverse
+from ZODB.POSException import ConflictError
+from zope.interface import provider
+from zope.interface import implementer
+
+import six
+
+
+@provider(ISectionBlueprint)
+@implementer(ISection)
+class Properties(object):
+
+    """ """
+
+    def __init__(self, transmogrifier, name, options, previous):
+        self.transmogrifier = transmogrifier
+        self.name = name
+        self.options = options
+        self.previous = previous
+        self.context = transmogrifier.context
+
+        if "path-key" in options:
+            pathkeys = options["path-key"].splitlines()
+        else:
+            pathkeys = defaultKeys(options["blueprint"], name, "path")
+        self.pathkey = Matcher(*pathkeys)
+
+        if "properties-key" in options:
+            propertieskeys = options["properties-key"].splitlines()
+        else:
+            propertieskeys = defaultKeys(
+                options["blueprint"], name, "properties"
+            )
+        self.propertieskey = Matcher(*propertieskeys)
+
+    def __iter__(self):
+        for item in self.previous:
+            pathkey = self.pathkey(*list(item.keys()))[0]
+            propertieskey = self.propertieskey(*list(item.keys()))[0]
+
+            if not pathkey or not propertieskey or propertieskey not in item:
+                # not enough info
+                yield item
+                continue
+
+            path = safe_unicode(item[pathkey].lstrip("/"))
+            if six.PY2 and isinstance(path, six.text_type):
+                path = path.encode("ascii")
+            obj = traverse(self.context, path, None)
+
+            if obj is None:
+                # path doesn't exist
+                yield item
+                continue
+
+            if not getattr(aq_base(obj), "_setProperty", False):
+                yield item
+                continue
+
+            for pid, pvalue, ptype in item[propertieskey]:
+                if getattr(aq_base(obj), pid, None) is not None:
+                    # if object have a attribute equal to property, do nothing
+                    continue
+
+                if ptype == "string" and six.PY2:
+                    pvalue = safe_unicode(pvalue).encode("utf-8")
+
+                try:
+                    if obj.hasProperty(pid):
+                        obj._updateProperty(pid, pvalue)
+                    else:
+                        obj._setProperty(pid, pvalue, ptype)
+                except ConflictError:
+                    raise
+                except Exception as e:
+                    raise Exception(
+                        'Failed to set property "%s" type "%s"'
+                        ' to "%s" at object %s. ERROR: %s'
+                        % (pid, ptype, pvalue, str(obj), str(e))
+                    )
+
+            yield item

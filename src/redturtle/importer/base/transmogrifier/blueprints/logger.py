@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from collective.transmogrifier.interfaces import ISection
-from collective.transmogrifier.interfaces import ISectionBlueprint
-from collective.transmogrifier.utils import Matcher
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import Matcher
 from plone import api
 from time import time
 from zope.annotation.interfaces import IAnnotations
@@ -80,13 +80,13 @@ class LoggerSection(object):
             logger.warning("\nNext objects errored somewhere in the pipeline:")
             for error in self.errored:
                 logger.warning(
-                    '- {path}: {reason}'.format(
-                        path=error['path'], reason=error.get('reason', '')
+                    "- {path}: {reason}".format(
+                        path=error["path"], reason=error.get("reason", "")
                     )
                 )
             # self.log_errors(self.errored)
         # delete validation data from annotations
-        annotations = IAnnotations(self.transmogrifier)
+        annotations = IAnnotations(api.portal.get().REQUEST)
         if VALIDATIONKEY in annotations:
             del annotations[VALIDATIONKEY]
         if ERROREDKEY in annotations:

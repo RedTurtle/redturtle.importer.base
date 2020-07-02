@@ -15,10 +15,16 @@ Dependencies
 This product is made over other useful tools:
 
 * `collective.jsonmigrator`__
+* `collective.transmogrifier`__
 * `transmigrify.dexterity`__
 
 __ https://github.com/collective/collective.jsonmigrator
+__ https://github.com/collective/collective.transmogrifier
 __ https://github.com/collective/transmogrify.dexterity
+
+These tools are not yet actively maintained, so we moved useful parts into this
+project to have a working Python 3 importer based on transmogrifier.
+
 
 Features
 ========
@@ -93,6 +99,40 @@ Before running a migration, you can check the final configuration in `@@data-mig
 
 
 __ https://github.com/RedTurtle/redturtle.importer.base/blob/python3/src/redturtle/importer/base/transmogrifier/redturtleplone5.cfg
+
+
+Custom types mapping
+--------------------
+
+*contentsmapping* is the section that allows to convert one portal_type to another before object creation.
+
+There is a plugin system based on subscribers that allows plugins to add custom mappings.
+
+You need to register a subscriber for `IPortalTypeMapping` like this::
+
+    <subscriber
+        factory=".types_mapping.MyCustomMapping"
+        provides="redturtle.importer.base.interfaces.IPortalTypeMapping"/>
+
+And then you need to create the class::
+
+    @adapter(IPloneSiteRoot, IBrowserRequest)
+    @implementer(IPortalTypeMapping)
+    class MyCustomMapping(object):
+        order = 100
+
+        def __init__(self, context, request):
+            self.context = context
+            self.request = request
+
+        def __call__(self, item, typekey):
+            """
+            """
+            portal_type = item[typekey]
+            if portal_type == "Type-A":
+                item[typekey] = "Type-B"
+                ...
+            return item
 
 
 Custom steps for specific portal types

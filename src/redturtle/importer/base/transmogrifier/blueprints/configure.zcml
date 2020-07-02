@@ -1,0 +1,120 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:transmogrifier="http://namespaces.plone.org/transmogrifier"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="redturtle.importer.base">
+
+  <utility
+      component=".prettyprinter.PrettyPrinter"
+      name="redturtle.importer.base.sections.pprinter"
+      />
+
+  <utility
+      component=".logger.LoggerSection"
+      name="redturtle.importer.base.sections.logger"
+      />
+
+  <utility
+      component=".fieldscorrector.FieldsCorrector"
+      name="redturtle.importer.base.sections.fieldscorrector"
+      />
+
+  <utility
+      component=".localroles.LocalRoles"
+      name="redturtle.importer.base.sections.localroles"
+      />
+
+  <utility
+      component=".source.CachedCatalogSourceSection"
+      name="redturtle.migration.cachedcatalogsource"
+      />
+
+  <utility
+      component=".workflowhistory.WorkflowHistory"
+      name="redturtle.importer.base.sections.workflowupdater"
+      />
+
+  <utility
+      component=".datafields.DataFields"
+      name="redturtle.importer.base.sections.datafields"
+      />
+
+  <utility
+      component=".leftovers.LeftOvers"
+      name="redturtle.importer.base.sections.leftovers"
+      />
+
+  <utility
+      component=".discussions.Discussions"
+      name="redturtle.importer.base.sections.discussions"
+      />
+
+  <utility
+      component=".contextfixes.ContextFixes"
+      name="redturtle.importer.base.sections.context_fixes"
+      />
+  <utility
+      component=".owner.Owner"
+      name="redturtle.importer.base.sections.owner"
+      />
+
+  <utility
+      component=".commit.CommitSection"
+      name="redturtle.importer.base.sections.commit"
+      />
+
+  <utility
+      component=".schemaupdater.DexterityUpdateSection"
+      name="redturtle.importer.base.sections.schemaupdater"
+      />
+
+  <utility
+      component=".constructor.ConstructorSection"
+      name="redturtle.importer.base.sections.constructor"
+      />
+
+  <utility
+      component=".contentsmapping.ContentsMappingSection"
+      name="redturtle.importer.base.sections.contentsmapping"
+      />
+
+  <utility
+      component=".migrationresults.MigrationResults"
+      name="redturtle.importer.base.sections.migrationresults"
+      />
+  <utility
+      component=".properties.Properties"
+      name="redturtle.importer.base.sections.properties"
+      />
+  
+  <utility
+      component=".browserdefault.BrowserDefaultSection"
+      name="redturtle.importer.base.sections.browserdefault"
+      />
+  <utility
+      component=".datesupdater.DatesUpdater"
+      name="redturtle.importer.base.sections.datesupdater"
+      />
+   <utility
+      component=".reindexobject.ReindexObjectSection"
+      name="redturtle.importer.base.sections.reindexobject"
+      />
+      
+    <utility
+      component=".manipulator.ManipulatorSection"
+      name="redturtle.importer.base.sections.manipulator"
+      />
+    <utility
+      component=".folders.FoldersSection"
+      name="redturtle.importer.base.sections.folders"
+      />
+    <utility
+      component=".savepoint.SavepointSection"
+      name="redturtle.importer.base.sections.savepoint"
+      />
+    <utility
+      component=".pamlinker.PAMLinker"
+      name="redturtle.importer.base.sections.pamlinker"
+      />
+</configure>

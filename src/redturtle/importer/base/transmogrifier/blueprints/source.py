@@ -43,8 +43,8 @@ class CachedCatalogSourceSection(object):
 
         self.default_local_path = self.get_option("default-local-path", "")
 
-        catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
-        self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
+        # catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
+        # self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
 
         self.remote_skip_paths = self.get_option("remote-skip-paths", "").split()
         self.skip_private = json.loads(self.get_option("skip-private", "False").lower())
@@ -66,7 +66,9 @@ class CachedCatalogSourceSection(object):
             self.payload = {"catalog_query": catalog_query}
         # Make request
         resp = requests.get(
-            "{}{}/rt_get_catalog_results".format(self.remote_url, catalog_path),
+            "{url}{root}/rt_get_catalog_results".format(
+                url=self.remote_url, root=self.remote_root
+            ),
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
@@ -131,15 +133,10 @@ class CachedCatalogSourceSection(object):
 
             if not skip:
                 item = self.get_remote_item(path)
-
                 if item:
-                    item["_path"] = (
-                        self.default_local_path + item["_path"][self.site_path_length :]
+                    item["_path"] = item["_path"].replace(
+                        self.remote_root, self.default_local_path
                     )
-                    item["_auth_info"] = (self.remote_username, self.remote_password)
-                    item["_site_path_length"] = self.site_path_length
-
-                    # Enable logging
                     self.storage.append(item["_path"])
 
                     yield item

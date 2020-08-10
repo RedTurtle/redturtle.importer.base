@@ -7,7 +7,6 @@ from redturtle.importer.base.transmogrifier.utils import Matcher
 from DateTime import DateTime
 from dateutil.parser import parse
 from plone.dexterity.interfaces import IDexterityContent
-from plone.uuid.interfaces import IUUID
 from zope.interface import provider
 from zope.interface import implementer
 
@@ -34,9 +33,7 @@ class LeftOvers(object):
         if "properties-key" in options:
             propertieskeys = options["properties-key"].splitlines()
         else:
-            propertieskeys = defaultKeys(
-                options["blueprint"], name, "properties"
-            )
+            propertieskeys = defaultKeys(options["blueprint"], name, "properties")
         self.propertieskey = Matcher(*propertieskeys)
 
     def __iter__(self):
@@ -99,25 +96,6 @@ class LeftOvers(object):
                 if item["_local_roles_block"]:
                     obj.__ac_local_roles_block__ = True
 
-            # Rebuild CollageAlias AT reference
-            if item.get("_type", False):
-                if item["_type"] == u"CollageAlias":
-                    if item["_atrefs"].get("Collage_aliasedItem", False):
-                        try:
-                            ref_path = (
-                                item["language"]
-                                + item["_atrefs"]["Collage_aliasedItem"][0][
-                                    item["_site_path_length"] :
-                                ]
-                            )  # noqa
-                            ref_obj = self.context.unrestrictedTraverse(
-                                str(ref_path)
-                            )
-                            ref_uuid = IUUID(ref_obj)
-                            obj.set_target(ref_uuid)
-                        except Exception:
-                            pass
-
             # Put creation and modification time on its place
             if item.get("creation_date", False):
                 if IDexterityContent.providedBy(item):
@@ -127,9 +105,7 @@ class LeftOvers(object):
 
             if item.get("modification_date", False):
                 if IDexterityContent.providedBy(obj):
-                    obj.modification_date = parse(
-                        item.get("modification_date")
-                    )
+                    obj.modification_date = parse(item.get("modification_date"))
                 else:
                     obj.creation_date = DateTime(item.get("modification_date"))
 

@@ -101,6 +101,37 @@ Before running a migration, you can check the final configuration in `@@data-mig
 __ https://github.com/RedTurtle/redturtle.importer.base/blob/python3/src/redturtle/importer/base/transmogrifier/redturtleplone5.cfg
 
 
+catalogsource configuration
+---------------------------
+
+This is an example of `[catalogsource]` part::
+ 
+    [catalogsource]
+    ...
+    remote-url = http://localhost:8080
+    remote-root = /Plone
+    catalog-path = /Plone/portal_catalog
+    remote-username = username
+    remote-password = password
+
+Required options are:
+
+- `remote-url`: The url of source Plone site
+- `remote-root`: The path of Plone site that we want to migrate
+- `remote-username`: Credentials to access to source site
+- `remote-password`: Credentials to access to source site
+
+Additional options are:
+
+- `default-local-path`: A path where save migrate contents in destination Site. This path will replace item's root path. Destination root path is not needed in this path.
+- `skip-private`: Boolean to migrate or not private items into destination. Default is `False`.
+- `remote_skip_paths`: A list of paths from source site that will be skipped during migration process.
+- `incremental-migration`: Boolean value. If a content already migrate hasn't been modified since last migration, don't override it. Default is `False`.
+- `ignore-cache`: Boolean value. If True, ignore local cache and always get content data from source site.
+- `cache-dir`: Local folder where migration data cache will be stored. Default is `/tmp/migration/migration_cache`.
+- `migration-dir`: Local fodler where migration support files (for final summary for example) will be saved. Default is '/tmp/migration'.
+
+
 Custom types mapping
 --------------------
 

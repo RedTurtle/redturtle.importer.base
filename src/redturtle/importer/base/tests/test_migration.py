@@ -128,3 +128,27 @@ class TestBaseMigrationSucceed(unittest.TestCase):
         self.assertEqual(john.getProperty("fullname"), "John Doe")
         self.assertEqual(john.getProperty("home_page"), "http://www.plone.org")
         self.assertEqual(john.getProperty("description"), "foo")
+
+    def test_import_in_custom_destination(self):
+        os.environ["MIGRATION_FILE_PATH"] = get_config_file_path("custom_path.cfg")
+
+        self.migration_view.do_migrate()
+
+        children = self.portal.listFolderContents()
+        documents = api.content.find(portal_type="Document")
+        folders = api.content.find(portal_type="Folder")
+        collections = api.content.find(portal_type="Collection")
+        news = api.content.find(portal_type="News Item")
+        files = api.content.find(portal_type="File")
+        images = api.content.find(portal_type="Image")
+        events = api.content.find(portal_type="Event")
+
+        self.assertEqual(len(children), 1)
+        self.assertEqual(children[0].getId(), "custom-destination")
+        self.assertEqual(len(documents), 4)
+        self.assertEqual(len(folders), 7)
+        self.assertEqual(len(collections), 3)
+        self.assertEqual(len(news), 2)
+        self.assertEqual(len(files), 1)
+        self.assertEqual(len(images), 1)
+        self.assertEqual(len(events), 1)

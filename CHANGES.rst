@@ -4,8 +4,8 @@ Changelog
 2.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Handle custom destination path.
+  [cekk]
 
 2.0.0 (2020-07-28)
 ------------------

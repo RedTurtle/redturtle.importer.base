@@ -9,7 +9,7 @@ from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
 from redturtle.importer.base.transmogrifier.utils import defaultMatcher
 from redturtle.importer.base.transmogrifier.utils import Expression
-from redturtle.importer.base.utils import ERROREDKEY
+from redturtle.importer.base.transmogrifier.utils import ERROREDKEY
 from z3c.form import interfaces
 from z3c.relationfield.interfaces import IRelationChoice
 from z3c.relationfield.interfaces import IRelationList

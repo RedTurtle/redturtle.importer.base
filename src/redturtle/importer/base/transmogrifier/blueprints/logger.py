@@ -3,9 +3,9 @@ from plone import api
 from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
 from redturtle.importer.base.transmogrifier.utils import Matcher
-from redturtle.importer.base.utils import COUNTKEY
-from redturtle.importer.base.utils import ERROREDKEY
-from redturtle.importer.base.utils import VALIDATIONKEY
+from redturtle.importer.base.transmogrifier.utils import COUNTKEY
+from redturtle.importer.base.transmogrifier.utils import ERROREDKEY
+from redturtle.importer.base.transmogrifier.utils import VALIDATIONKEY
 from time import time
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import provider, implementer

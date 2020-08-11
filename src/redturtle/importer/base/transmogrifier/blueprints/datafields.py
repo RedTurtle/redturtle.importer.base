@@ -6,7 +6,7 @@ from redturtle.importer.base import logger
 from redturtle.importer.base.interfaces import IDeserializer
 from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
-from redturtle.importer.base.utils import ERROREDKEY
+from redturtle.importer.base.transmogrifier.utils import ERROREDKEY
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import implementer
 from zope.interface import provider

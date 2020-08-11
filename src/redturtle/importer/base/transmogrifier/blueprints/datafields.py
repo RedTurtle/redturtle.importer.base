@@ -61,13 +61,13 @@ class DataFields(object):
                             field = s_field
                             try:
                                 deserializer = IDeserializer(field)
+                                value = deserializer(item[key], None, item)
                             except Exception as e:
                                 logger.exception(e)
                                 self.errored.append(
                                     {"path": path, "reason": "Deserialization Error"}
                                 )
                                 continue
-                            value = deserializer(item[key], None, item)
                             field.set(field.interface(obj), value)
                 if not field:
                     logger.warning(

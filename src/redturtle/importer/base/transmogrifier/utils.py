@@ -15,6 +15,11 @@ import pprint
 import re
 import sys
 
+COUNTKEY = "redturtle.importer.base.count"
+ERROREDKEY = "redturtle.importer.base.errors"
+ITEMS_IN = "redturtle.importer.base.items_in"
+VALIDATIONKEY = "redturtle.importer.base.logger"
+
 
 logger = logging.getLogger(__name__)
 

@@ -9,6 +9,7 @@ from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
 from redturtle.importer.base.transmogrifier.utils import defaultMatcher
 from redturtle.importer.base.transmogrifier.utils import Expression
+from redturtle.importer.base.utils import ERROREDKEY
 from z3c.form import interfaces
 from z3c.relationfield.interfaces import IRelationChoice
 from z3c.relationfield.interfaces import IRelationList
@@ -23,8 +24,6 @@ from zope.schema import getFieldsInOrder
 
 import logging
 
-
-ERROREDKEY = "redturtle.importer.base.error"
 
 _marker = object()
 
@@ -58,9 +57,7 @@ class DexterityUpdateSection(object):
             self.log = lambda s: self.logger.log(self.loglevel, s)
         else:
             self.log = None
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
-            ERROREDKEY, []
-        )
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
 
     def __iter__(self):  #  noqa
         # need to be refactored
@@ -112,11 +109,7 @@ class DexterityUpdateSection(object):
                                 field
                             ):  # noqa
                                 self.transmogrifier.fixrelations.append(
-                                    (
-                                        "/".join(obj.getPhysicalPath()),
-                                        name,
-                                        value,
-                                    )
+                                    ("/".join(obj.getPhysicalPath()), name, value)
                                 )  # noqa
                             # Value was given in pipeline, so set it
                             deserializer = IDeserializer(field)
@@ -140,8 +133,7 @@ class DexterityUpdateSection(object):
                             (obj, field), interfaces.IDataManager
                         ).query()
                         if not (
-                            value is field.missing_value
-                            or value is interfaces.NO_VALUE
+                            value is field.missing_value or value is interfaces.NO_VALUE
                         ):
                             continue
 

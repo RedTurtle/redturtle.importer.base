@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
+from plone import api
 from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
 from redturtle.importer.base.transmogrifier.utils import Matcher
-from plone import api
+from redturtle.importer.base.utils import COUNTKEY
+from redturtle.importer.base.utils import ERROREDKEY
+from redturtle.importer.base.utils import VALIDATIONKEY
 from time import time
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import provider, implementer
 
-import logging
 
-VALIDATIONKEY = "redturtle.importer.base.logger"
-ERROREDKEY = "redturtle.importer.base.errors"
-COUNTKEY = "redturtle.importer.base.count"
+import logging
 
 
 @implementer(ISection)
@@ -28,12 +28,8 @@ class LoggerSection(object):
         self.storage = IAnnotations(api.portal.get().REQUEST).setdefault(
             VALIDATIONKEY, []
         )
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
-            ERROREDKEY, []
-        )
-        self.count = IAnnotations(api.portal.get().REQUEST).setdefault(
-            COUNTKEY, {}
-        )
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
+        self.count = IAnnotations(api.portal.get().REQUEST).setdefault(COUNTKEY, {})
 
     def __iter__(self):
         start_time = time()

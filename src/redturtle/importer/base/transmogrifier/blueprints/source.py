@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-from redturtle.importer.base.interfaces import ISection
-from redturtle.importer.base.interfaces import ISectionBlueprint
 from datetime import datetime
 from plone import api
-from zope.interface import provider
-from zope.interface import implementer
+from redturtle.importer.base.interfaces import ISection
+from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.utils import COUNTKEY
+from redturtle.importer.base.utils import ERROREDKEY
+from redturtle.importer.base.utils import ITEMS_IN
+from redturtle.importer.base.utils import VALIDATIONKEY
 from zope.annotation.interfaces import IAnnotations
+from zope.interface import implementer
+from zope.interface import provider
 
 
 import base64
@@ -18,11 +22,6 @@ import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
 
-
-VALIDATIONKEY = "redturtle.importer.base.logger"
-ERROREDKEY = "redturtle.importer.base.errors"
-COUNTKEY = "redturtle.importer.base.count"
-ITEMS_IN = "redturtle.importer.base.items_in"
 
 logger = logging.getLogger(__name__)
 

@@ -5,6 +5,7 @@ from Products.CMFPlone.utils import safe_unicode
 from redturtle.importer.base.interfaces import IDeserializer
 from zope.component import adapter
 from zope.interface import implementer
+from zope.interface import Interface
 
 
 def get_site_encoding():
@@ -16,12 +17,13 @@ def get_site_encoding():
 
 
 @implementer(IDeserializer)
-@adapter(IRichText)
+@adapter(IRichText, Interface)
 class RichTextDeserializer(object):
     _type = RichTextValue
 
-    def __init__(self, field):
+    def __init__(self, field, context):
         self.field = field
+        self.context = context
 
     def _convert_object(self, obj, encoding):
         """Decode binary strings into unicode objects

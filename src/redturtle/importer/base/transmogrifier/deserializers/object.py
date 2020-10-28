@@ -4,6 +4,7 @@ from redturtle.importer.base.transmogrifier.deserializers.default import (
     DefaultDeserializer,
 )
 from zope.component import adapter
+from zope.component import queryMultiAdapter
 from zope.dottedname.resolve import resolve
 from zope.interface import implementer
 from zope.interface import Interface
@@ -63,7 +64,9 @@ class ObjectDeserializer(object):
                 continue
 
             if k in self.field.schema:
-                deserializer = IDeserializer(self.field.schema[k])
+                deserializer = queryMultiAdapter(
+                    (self.field.schema[k], obj), IDeserializer
+                )
             else:
                 deserializer = DefaultDeserializer(None)
             setattr(

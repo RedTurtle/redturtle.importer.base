@@ -5,6 +5,7 @@ from redturtle.importer.base.interfaces import ISectionBlueprint
 from plone.dexterity.utils import iterSchemata
 from redturtle.importer.base.interfaces import IDeserializer
 from redturtle.importer.base import logger
+from zope.component import queryMultiAdapter
 from zope.interface import provider
 from zope.interface import implementer
 from zope.schema import getFieldsInOrder
@@ -58,7 +59,9 @@ class DataFields(object):
                     for name, s_field in getFieldsInOrder(schemata):
                         if name == fieldname:
                             field = s_field
-                            deserializer = IDeserializer(field)
+                            deserializer = queryMultiAdapter(
+                                (field, obj), IDeserializer
+                            )
                             value = deserializer(item[key], None, item)
                             field.set(field.interface(obj), value)
                 if not field:

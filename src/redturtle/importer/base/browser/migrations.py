@@ -19,6 +19,7 @@ from redturtle.importer.base.transmogrifier.utils import (
     get_additional_config,
     get_transmogrifier_configuration,
 )
+from zope.component import queryMultiAdapter
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
@@ -71,7 +72,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                             value = uuidToObject(value)
                         else:
                             value = [uuidToObject(uuid) for uuid in value]
-                        deserializer = IDeserializer(field)
+                        deserializer = queryMultiAdapter(
+                            (field, obj), IDeserializer
+                        )
                         value = deserializer(
                             value, [], {}, True, logger=logger
                         )

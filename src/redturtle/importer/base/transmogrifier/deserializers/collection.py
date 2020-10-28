@@ -5,6 +5,7 @@ from redturtle.importer.base.transmogrifier.deserializers.default import (
     DefaultDeserializer,
 )
 from zope.component import adapter
+from zope.component import queryMultiAdapter
 from zope.interface import implementer
 from zope.interface import Interface
 from zope.schema.interfaces import ICollection
@@ -26,7 +27,9 @@ class CollectionDeserializer(object):
         if isinstance(value, string_types):
             value = [v for v in (v.strip() for v in value.split(";")) if v]
         if field.value_type is not None:
-            deserializer = IDeserializer(self.field.value_type)
+            deserializer = queryMultiAdapter(
+                (self.field.value_type, self.context), IDeserializer
+            )
         else:
             deserializer = DefaultDeserializer(None)
         value = [

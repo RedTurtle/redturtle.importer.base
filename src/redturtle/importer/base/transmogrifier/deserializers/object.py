@@ -65,7 +65,7 @@ class ObjectDeserializer(object):
 
             if k in self.field.schema:
                 deserializer = queryMultiAdapter(
-                    (self.field.schema[k], obj), IDeserializer
+                    (self.field.schema[k], self.context), IDeserializer
                 )
             else:
                 deserializer = DefaultDeserializer(None)

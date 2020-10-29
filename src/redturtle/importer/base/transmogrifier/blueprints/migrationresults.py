@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
+from redturtle.importer.base.transmogrifier.utils import ERROREDKEY
 from plone import api
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import provider
@@ -8,8 +9,6 @@ from zope.interface import implementer
 
 import json
 import os
-
-ERROREDKEY = "redturtle.importer.base.errors"
 
 
 @implementer(ISection)
@@ -39,9 +38,7 @@ class MigrationResults(object):
         if not os.path.exists(migration_dir):
             os.makedirs(migration_dir)
         file_name = self.options.get(option_name, default)
-        return "{0}/{1}_{2}".format(
-            migration_dir, api.portal.get().getId(), file_name
-        )
+        return "{0}/{1}_{2}".format(migration_dir, api.portal.get().getId(), file_name)
 
     def save_debug_out_file(self):
 
@@ -56,8 +53,6 @@ class MigrationResults(object):
         annotations = IAnnotations(request).get(ERROREDKEY, None)
         if not annotations:
             return
-        file_path = self.get_file_path(
-            option_name="errors_log", default="errors.json"
-        )
+        file_path = self.get_file_path(option_name="errors_log", default="errors.json")
         with open(file_path, "w") as fp:
             json.dump(annotations, fp)

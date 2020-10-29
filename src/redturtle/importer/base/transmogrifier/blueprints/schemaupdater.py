@@ -112,7 +112,9 @@ class DexterityUpdateSection(object):
                                     ("/".join(obj.getPhysicalPath()), name, value)
                                 )  # noqa
                             # Value was given in pipeline, so set it
-                            deserializer = IDeserializer(field)
+                            deserializer = queryMultiAdapter(
+                                (field, obj), IDeserializer
+                            )
                             try:
                                 if value:
                                     value = deserializer(

@@ -3,6 +3,7 @@ from __future__ import print_function
 from plone import api
 from plone.dexterity.utils import iterSchemata
 from redturtle.importer.base import logger
+from zope.component import queryMultiAdapter
 from redturtle.importer.base.interfaces import IDeserializer
 from redturtle.importer.base.interfaces import ISection
 from redturtle.importer.base.interfaces import ISectionBlueprint
@@ -60,7 +61,9 @@ class DataFields(object):
                         if name == fieldname:
                             field = s_field
                             try:
-                                deserializer = IDeserializer(field)
+                                deserializer = queryMultiAdapter(
+                                  (field, obj), IDeserializer
+                                )
                                 value = deserializer(item[key], None, item)
                             except Exception as e:
                                 logger.exception(e)

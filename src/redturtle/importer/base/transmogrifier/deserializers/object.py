@@ -4,18 +4,23 @@ from redturtle.importer.base.transmogrifier.deserializers.default import (
     DefaultDeserializer,
 )
 from zope.component import adapter
+from zope.component import queryMultiAdapter
 from zope.dottedname.resolve import resolve
 from zope.interface import implementer
+from zope.interface import Interface
 from zope.schema.interfaces import IObject
 
 
 @implementer(IDeserializer)
-@adapter(IObject)
+@adapter(IObject, Interface)
 class ObjectDeserializer(object):
-    def __init__(self, field):
+    def __init__(self, field, context):
         self.field = field
+        self.context = context
 
-    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
+    def __call__(
+        self, value, filestore, item, disable_constraints=False, logger=None
+    ):
         if not isinstance(value, dict):
             raise ValueError("Need a dict to convert")
         if not value.get("_class", None):
@@ -43,7 +48,8 @@ class ObjectDeserializer(object):
         klass = resolve(value["_class"])
         if not self.field.schema.implementedBy(klass):
             raise ValueError(
-                "%s does not implemement %s" % (value["_class"], self.field.schema)
+                "%s does not implemement %s"
+                % (value["_class"], self.field.schema)
             )
         instance = klass()
 
@@ -58,7 +64,9 @@ class ObjectDeserializer(object):
                 continue
 
             if k in self.field.schema:
-                deserializer = IDeserializer(self.field.schema[k])
+                deserializer = queryMultiAdapter(
+                    (self.field.schema[k], self.context), IDeserializer
+                )
             else:
                 deserializer = DefaultDeserializer(None)
             setattr(

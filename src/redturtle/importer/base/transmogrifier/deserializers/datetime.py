@@ -5,6 +5,7 @@ from zope.schema.interfaces import IDatetime
 from plone.app.event.base import default_timezone
 from redturtle.importer.base.interfaces import IDeserializer
 from zope.interface import implementer
+from zope.interface import Interface
 from zope.component import adapter
 
 import dateutil.parser
@@ -12,10 +13,11 @@ import six
 
 
 @implementer(IDeserializer)
-@adapter(IDatetime)
+@adapter(IDatetime, Interface)
 class DatetimeDeserializer(object):
-    def __init__(self, field):
+    def __init__(self, field, context):
         self.field = field
+        self.context = context
 
     def __call__(
         self, value, filestore, item, disable_constraints=False, logger=None

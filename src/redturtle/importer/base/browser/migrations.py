@@ -2,7 +2,9 @@
 from __future__ import print_function
 from AccessControl import Unauthorized
 from Acquisition import aq_base
-from redturtle.importer.base.transmogrifier.transmogrifier import Transmogrifier
+from redturtle.importer.base.transmogrifier.transmogrifier import (
+    Transmogrifier,
+)
 from lxml import etree
 from plone import api
 from plone.app.textfield import RichText
@@ -17,6 +19,7 @@ from redturtle.importer.base.transmogrifier.utils import (
     get_additional_config,
     get_transmogrifier_configuration,
 )
+from zope.component import queryMultiAdapter
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 from zope.schema import getFieldsInOrder
@@ -69,8 +72,12 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                             value = uuidToObject(value)
                         else:
                             value = [uuidToObject(uuid) for uuid in value]
-                        deserializer = IDeserializer(field)
-                        value = deserializer(value, [], {}, True, logger=logger)
+                        deserializer = queryMultiAdapter(
+                            (field, obj), IDeserializer
+                        )
+                        value = deserializer(
+                            value, [], {}, True, logger=logger
+                        )
                         # self.disable_constraints,
                         # logger=self.log,
                         field.set(field.interface(obj), value)
@@ -81,7 +88,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         for item in getattr(self.transmogrifier, "default_pages", []):
             try:
                 obj = api.content.get(UID=item["obj"])
-                obj.manage_addProperty("default_page", item["default_page"], "string")
+                obj.manage_addProperty(
+                    "default_page", item["default_page"], "string"
+                )
                 obj.reindexObject(["is_default_page"])
             except Exception:
                 pass
@@ -89,7 +98,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
     def do_migrate(self, REQUEST=None):
 
         authenticator = api.content.get_view(
-            context=api.portal.get(), request=self.request, name=u"authenticator"
+            context=api.portal.get(),
+            request=self.request,
+            name=u"authenticator",
         )
         if not authenticator.verify():
             raise Unauthorized
@@ -98,7 +109,8 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         self.transmogrifier = Transmogrifier(portal)
         # self.cleanup_log_files()
         self.transmogrifier(
-            configuration_id=self.transmogrifier_conf, **get_additional_config()
+            configuration_id=self.transmogrifier_conf,
+            **get_additional_config()
         )
 
         # run scripts after migration
@@ -228,7 +240,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 continue
             if "resolveuid" not in remote_url:
                 continue
-            uid = brain.getRemoteUrl.replace("/{0}/resolveuid/".format(portal_id), "")
+            uid = brain.getRemoteUrl.replace(
+                "/{0}/resolveuid/".format(portal_id), ""
+            )
             if not api.content.find(UID=uid):
                 link = brain.getObject()
                 noreference_urls.append(link.absolute_url())
@@ -236,7 +250,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 try:
                     api.content.delete(obj=link, check_linkintegrity=False)
                 except KeyError:
-                    logger.debug("Cannot remove {0}".format(link.absolute_url()))
+                    logger.debug(
+                        "Cannot remove {0}".format(link.absolute_url())
+                    )
 
         self.write_noreference_links(noreference_urls)
 
@@ -256,8 +272,12 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         if section is None:
             return
         logger.info("-- Import users and groups from file --")
-        import_users = self.get_boolean_value(section=section, name="import-users")
-        import_groups = self.get_boolean_value(section=section, name="import-groups")
+        import_users = self.get_boolean_value(
+            section=section, name="import-users"
+        )
+        import_groups = self.get_boolean_value(
+            section=section, name="import-groups"
+        )
         if import_users:
             self.import_users()
         if import_groups:
@@ -284,7 +304,11 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             view_name=view_name,
         )
         resp = requests.get(
-            url, auth=(section.get("remote-username"), section.get("remote-password"))
+            url,
+            auth=(
+                section.get("remote-username"),
+                section.get("remote-password"),
+            ),
         )
         if resp.ok and resp.status_code == 200:
             return resp.json()
@@ -300,7 +324,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             return
         if "_acl_users" not in json_data:
             logger.warning(
-                "Unable to import users: data format not correct: {}".format(json_data)
+                "Unable to import users: data format not correct: {}".format(
+                    json_data
+                )
             )
             return
         for userid, data in json_data["_acl_users"].items():
@@ -324,7 +350,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
                 )
                 api.user.grant_roles(username=userid, roles=roles)
             except ValueError as e:
-                logger.warn("Import User '{0}' threw an error: {1}".format(userid, e))
+                logger.warn(
+                    "Import User '{0}' threw an error: {1}".format(userid, e)
+                )
 
     def import_groups(self):
         json_data = self.retrieve_json_from_remote(view_name="export_groups")
@@ -332,7 +360,9 @@ class RedTurtlePlone5MigrationMain(BrowserView):
             return
         if "_acl_groups" not in json_data:
             logger.warning(
-                "Unable to import groups: data format not correct: {}".format(json_data)
+                "Unable to import groups: data format not correct: {}".format(
+                    json_data
+                )
             )
             return
         group_tool = api.portal.get_tool(name="portal_groups")
@@ -368,8 +398,12 @@ class MigrationResults(BrowserView):
 
     def get_results(self):
 
-        in_json = self.get_json_data(option="file-name-in", section_id="catalogsource")
-        out_json = self.get_json_data(option="file-name-out", section_id="results")
+        in_json = self.get_json_data(
+            option="file-name-in", section_id="catalogsource"
+        )
+        out_json = self.get_json_data(
+            option="file-name-out", section_id="results"
+        )
 
         results = {
             "in_count": len(list(in_json.keys())),

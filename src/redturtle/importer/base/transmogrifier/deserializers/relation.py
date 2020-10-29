@@ -3,6 +3,7 @@ from redturtle.importer.base.interfaces import IDeserializer
 from zope.component import adapter
 from zope.component import queryUtility
 from zope.interface import implementer
+from zope.interface import Interface
 
 import pkg_resources
 
@@ -29,13 +30,14 @@ else:
 if INTID_AVAILABLE and RELATIONFIELD_AVAILABLE:
 
     @implementer(IDeserializer)
-    @adapter(IRelation)
+    @adapter(IRelation, Interface)
     class RelationDeserializer(object):
 
         default_value = None
 
-        def __init__(self, field):
+        def __init__(self, field, context):
             self.field = field
+            self.context = context
 
         def __call__(
             self,
@@ -66,7 +68,7 @@ if INTID_AVAILABLE and RELATIONFIELD_AVAILABLE:
             return RelationValue(int_id)
 
     @implementer(IDeserializer)
-    @adapter(IRelationList)
+    @adapter(IRelationList, Interface)
     class RelationListDeserializer(RelationDeserializer):
 
         default_value = []

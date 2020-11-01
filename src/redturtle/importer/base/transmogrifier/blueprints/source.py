@@ -11,7 +11,7 @@ from zope.annotation.interfaces import IAnnotations
 from zope.interface import implementer
 from zope.interface import provider
 
-
+import ast
 import base64
 import hashlib
 import json
@@ -36,7 +36,9 @@ class CachedCatalogSourceSection(object):
         self.options = options
         self.context = transmogrifier.context
 
-        self.remote_url = self.get_option("remote-url", "http://localhost:8080")
+        self.remote_url = self.get_option(
+            "remote-url", "http://localhost:8080"
+        )
         self.remote_username = self.get_option("remote-username", "admin")
         self.remote_password = self.get_option("remote-password", "admin")
 
@@ -44,9 +46,12 @@ class CachedCatalogSourceSection(object):
 
         # catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
         # self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
-
-        self.remote_skip_paths = self.get_option("remote-skip-paths", "").split()
-        self.skip_private = json.loads(self.get_option("skip-private", "False").lower())
+        self.remote_skip_paths = ast.literal_eval(
+            self.get_option("remote-skip-paths", "")
+        )
+        self.skip_private = json.loads(
+            self.get_option("skip-private", "False").lower()
+        )
         self.remote_root = self.get_option("remote-root", "")
 
         # next is for communication with 'logger' section
@@ -81,7 +86,9 @@ class CachedCatalogSourceSection(object):
             os.makedirs(self.migration_dir)
 
         # cartella per la cache degli oggetti
-        self.cache_dir = self.get_option("cache-dir", "/tmp/migration/migration_cache")
+        self.cache_dir = self.get_option(
+            "cache-dir", "/tmp/migration/migration_cache"
+        )
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
 
@@ -119,11 +126,12 @@ class CachedCatalogSourceSection(object):
     def __iter__(self):
         for item in self.previous:
             yield item
-
         for path in self.item_paths:
             skip = False
             for skip_path in self.remote_skip_paths:
-                if path.startswith(self.remote_root + skip_path):
+                if not skip_path.startswith(self.remote_root):
+                    skip_path = self.remote_root + skip_path.lstrip("/")
+                if path.startswith(skip_path):
                     skip = True
 
             # Skip old talkback items
@@ -142,7 +150,9 @@ class CachedCatalogSourceSection(object):
         self.save_debug_in_file()
 
     def save_debug_in_file(self):
-        file_name = self.get_option("file-name-in", "migration_content_in.json")
+        file_name = self.get_option(
+            "file-name-in", "migration_content_in.json"
+        )
         file_path = "{0}/{1}_{2}".format(
             self.migration_dir, api.portal.get().getId(), file_name
         )
@@ -183,7 +193,9 @@ class CachedCatalogSourceSection(object):
 
         if resp.status_code != 200:
             logger.warning(
-                "[SKIPPED] - {url}: {code}".format(url=item_url, code=resp.status_code)
+                "[SKIPPED] - {url}: {code}".format(
+                    url=item_url, code=resp.status_code
+                )
             )
             self.items_in[path] = {"path": path, "reason": resp.status_code}
             self.errored.append({"path": path, "reason": resp.status_code})
@@ -220,13 +232,17 @@ class CachedCatalogSourceSection(object):
     # una migrazione incrementale, al momento si considera sempre fresh la
     # copia in cache, se c'è.
     def get_remote_item(self, path):
-        cachefile = os.path.sep.join([self.cache_dir, self.slugify(path) + ".json"])
+        cachefile = os.path.sep.join(
+            [self.cache_dir, self.slugify(path) + ".json"]
+        )
         item = self.get_item_from_remote(path)
         if not item:
             return {}
 
         # incremental migration
-        if self.incremental_migration and "relatedItems" not in list(item.keys()):
+        if self.incremental_migration and "relatedItems" not in list(
+            item.keys()
+        ):
             local_obj = self.get_local_obj(path)
             if local_obj:
                 local_object_modification_date = (
@@ -237,7 +253,10 @@ class CachedCatalogSourceSection(object):
                 remote_object_modification_date = datetime.strptime(
                     item.get("modification_date"), "%Y-%m-%d %H:%M"
                 )
-                if local_object_modification_date >= remote_object_modification_date:
+                if (
+                    local_object_modification_date
+                    >= remote_object_modification_date
+                ):
                     logger.info(
                         "Preserving destination content, Skipped migration "
                         + "for item {0}".format(path)
@@ -256,7 +275,11 @@ class CachedCatalogSourceSection(object):
             and "relatedItems" not in list(item.keys())
         ):
             with open(cachefile, "rb") as json_file:
-                json_data = json.load(json_file)
+                try:
+                    json_data = json.load(json_file)
+                except Exception:
+                    #  problems with cache file, skip it
+                    pass
             try:
                 item_mod_date = datetime.strptime(
                     item.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S.%f"
@@ -268,12 +291,14 @@ class CachedCatalogSourceSection(object):
                 )
             try:
                 item_cache_mod_date = datetime.strptime(
-                    json_data.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S.%f"
+                    json_data.get("modification_date")[:-6],
+                    "%Y/%m/%d %H:%M:%S.%f",
                 )
             except ValueError:
                 # date in different format
                 item_cache_mod_date = datetime.strptime(
-                    json_data.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S"
+                    json_data.get("modification_date")[:-6],
+                    "%Y/%m/%d %H:%M:%S",
                 )
             if item_mod_date <= item_cache_mod_date:
                 logger.info("HIT path: {0}".format(path))

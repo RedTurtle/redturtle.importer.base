@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="redturtle.importer.base">
+
+  <subscriber factory=".fix_relations.FixRelations"
+    provides="redturtle.importer.base.interfaces.IPostMigrationStep"/>
+  <subscriber factory=".fix_default_pages.FixDefaultPages"
+    provides="redturtle.importer.base.interfaces.IPostMigrationStep"/>
+  <subscriber factory=".broken_links.GenerateBrokenLinks"
+    provides="redturtle.importer.base.interfaces.IPostMigrationStep"/>
+  <subscriber factory=".fix_noreference.FixNoReferenceLinks"
+    provides="redturtle.importer.base.interfaces.IPostMigrationStep"/>
+  <subscriber factory=".import_users_groups.ImportUsersAndGroups"
+    provides="redturtle.importer.base.interfaces.IPostMigrationStep"/>
+</configure>

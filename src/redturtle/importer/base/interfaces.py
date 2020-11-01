@@ -75,3 +75,19 @@ class IPortalTypeMapping(Interface):
         """
         remap types
         """
+
+
+class IPostMigrationStep(Interface):
+    """
+    Do some post-migration steps
+    """
+
+    order = Attribute("The order which this adapter is run")
+
+    def __init__(context, request):
+        """Adapts context and the request.
+        """
+
+    def __call__():
+        """
+        """

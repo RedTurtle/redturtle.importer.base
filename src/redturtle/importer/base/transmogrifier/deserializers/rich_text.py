@@ -34,6 +34,10 @@ class RichTextDeserializer(object):
         self, value, filestore, item, disable_constraints=False, logger=None
     ):
         if isinstance(value, dict):
+            if "<img" in value:
+                import pdb
+
+                pdb.set_trace()
             encoding = value.get("encoding", get_site_encoding())
             contenttype = value.get("contenttype", None)
             if contenttype is not None:

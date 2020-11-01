@@ -12,6 +12,7 @@
       
   <include package=".blueprints" />
   <include package=".deserializers" />
+  <include package=".post_migration_steps" />
 
   <!-- types mapping -->
   <subscriber factory=".types_mapping.LinkMapping"

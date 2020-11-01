@@ -46,7 +46,10 @@ class GenerateBrokenLinks(object):
                     item_field = getattr(item, name, None)
                     if not item_field:
                         continue
-                    raw_text = item_field.raw
+                    try:
+                        raw_text = item_field.raw
+                    except AttributeError:
+                        continue
                     if not raw_text:
                         continue
                     try:

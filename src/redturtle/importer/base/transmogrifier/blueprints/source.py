@@ -279,38 +279,39 @@ class CachedCatalogSourceSection(object):
                     json_data = json.load(json_file)
                 except Exception:
                     #  problems with cache file, skip it
-                    pass
-            try:
-                item_mod_date = datetime.strptime(
-                    item.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S.%f"
-                )
-            except ValueError:
-                #  date in different format
-                item_mod_date = datetime.strptime(
-                    item.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S"
-                )
-            try:
-                item_cache_mod_date = datetime.strptime(
-                    json_data.get("modification_date")[:-6],
-                    "%Y/%m/%d %H:%M:%S.%f",
-                )
-            except ValueError:
-                # date in different format
-                item_cache_mod_date = datetime.strptime(
-                    json_data.get("modification_date")[:-6],
-                    "%Y/%m/%d %H:%M:%S",
-                )
-            if item_mod_date <= item_cache_mod_date:
-                logger.info("HIT path: {0}".format(path))
-                self.items_in[json_data.get("_uid")] = {
-                    "id": json_data.get("_id"),
-                    "portal_type": json_data.get("_type"),
-                    "title": json_data.get("title"),
-                    "path": json_data.get("_path"),
-                }
-                return json_data
-            logger.info("MISS path: {0}".format(path))
-
+                    json_data = ""
+            if json_data:
+                try:
+                    item_mod_date = datetime.strptime(
+                        item.get("modification_date")[:-6],
+                        "%Y/%m/%d %H:%M:%S.%f",
+                    )
+                except ValueError:
+                    #  date in different format
+                    item_mod_date = datetime.strptime(
+                        item.get("modification_date")[:-6], "%Y/%m/%d %H:%M:%S"
+                    )
+                try:
+                    item_cache_mod_date = datetime.strptime(
+                        json_data.get("modification_date")[:-6],
+                        "%Y/%m/%d %H:%M:%S.%f",
+                    )
+                except ValueError:
+                    # date in different format
+                    item_cache_mod_date = datetime.strptime(
+                        json_data.get("modification_date")[:-6],
+                        "%Y/%m/%d %H:%M:%S",
+                    )
+                if item_mod_date <= item_cache_mod_date:
+                    logger.info("HIT path: {0}".format(path))
+                    self.items_in[json_data.get("_uid")] = {
+                        "id": json_data.get("_id"),
+                        "portal_type": json_data.get("_type"),
+                        "title": json_data.get("title"),
+                        "path": json_data.get("_path"),
+                    }
+                    return json_data
+                logger.info("MISS path: {0}".format(path))
         if item:
             with open(cachefile, "w", encoding="utf-8") as file:
                 json.dump(item, file, indent=2)

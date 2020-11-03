@@ -29,6 +29,8 @@ class GenerateBrokenLinks(object):
     def __call__(self, transmogrifier):
         """
         """
+        if not self.should_execute(transmogrifier):
+            return
         logger.info("## Generating broken tinymce internal links ##")
         pc = api.portal.get_tool(name="portal_catalog")
         brains = pc()
@@ -70,6 +72,11 @@ class GenerateBrokenLinks(object):
         self.write_broken_links(
             paths=broken_urls, transmogrifier=transmogrifier
         )
+
+    def should_execute(self, transmogrifier):
+        section = transmogrifier.get("catalogsource")
+        flag = section.get("disable-post-scripts", "False").lower()
+        return flag == "false" or flag == 0
 
     def write_broken_links(self, paths, transmogrifier):
         section = transmogrifier.get("results")

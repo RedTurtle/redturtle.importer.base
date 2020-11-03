@@ -23,6 +23,8 @@ class FixNoReferenceLinks(object):
     def __call__(self, transmogrifier):
         """
         """
+        if not self.should_execute(transmogrifier):
+            return
         logger.info("## Generating noreference links ##")
         noreference_urls = []
         portal_id = api.portal.get().getId()
@@ -52,6 +54,11 @@ class FixNoReferenceLinks(object):
         self.write_noreference_links(
             paths=noreference_urls, transmogrifier=transmogrifier
         )
+
+    def should_execute(self, transmogrifier):
+        section = transmogrifier.get("catalogsource")
+        flag = section.get("disable-post-scripts", "False").lower()
+        return flag == "false" or flag == 0
 
     def write_noreference_links(self, paths, transmogrifier):
         section = transmogrifier.get("results")

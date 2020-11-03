@@ -24,7 +24,7 @@ class ImportUsersAndGroups(object):
         """
         """
         section = transmogrifier.get("users_and_groups")
-        if section is None:
+        if section is None or not self.should_execute(transmogrifier):
             return
         logger.info("## Import users and groups ##")
         import_users = self.get_boolean_value(
@@ -34,16 +34,18 @@ class ImportUsersAndGroups(object):
             section=section, name="import-groups"
         )
         if import_users:
-            self.import_users()
+            self.import_users(transmogrifier=transmogrifier)
         if import_groups:
-            self.import_groups()
+            self.import_groups(transmogrifier=transmogrifier)
 
     def get_boolean_value(self, section, name):
         value = section.get(name, "false").lower()
         return value == "true" or value == "1"
 
-    def import_users(self):
-        json_data = self.retrieve_json_from_remote(view_name="export_users")
+    def import_users(self, transmogrifier):
+        json_data = self.retrieve_json_from_remote(
+            transmogrifier=transmogrifier, view_name="export_users"
+        )
         if not json_data:
             return
         if "_acl_users" not in json_data:
@@ -78,8 +80,10 @@ class ImportUsersAndGroups(object):
                     "Import User '{0}' threw an error: {1}".format(userid, e)
                 )
 
-    def import_groups(self):
-        json_data = self.retrieve_json_from_remote(view_name="export_groups")
+    def import_groups(self, transmogrifier):
+        json_data = self.retrieve_json_from_remote(
+            transmogrifier=transmogrifier, view_name="export_groups"
+        )
         if not json_data:
             return
         if "_acl_groups" not in json_data:
@@ -109,7 +113,7 @@ class ImportUsersAndGroups(object):
             for member in props["members"]:
                 acl_group.addMember(member)
 
-    def retrieve_json_from_remote(self, view_name):
+    def retrieve_json_from_remote(self, transmogrifier, view_name):
         section = transmogrifier.get("catalogsource")
         url = section.get("remote-url", "")
         root = section.get("remote-root", "")
@@ -139,3 +143,8 @@ class ImportUsersAndGroups(object):
                 url=url, reason=resp.reason, code=resp.status_code
             )
         )
+
+    def should_execute(self, transmogrifier):
+        section = transmogrifier.get("catalogsource")
+        flag = section.get("disable-post-scripts", "False").lower()
+        return flag == "false" or flag == 0

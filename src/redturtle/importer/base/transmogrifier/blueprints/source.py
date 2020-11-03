@@ -47,7 +47,7 @@ class CachedCatalogSourceSection(object):
         # catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
         # self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
         self.remote_skip_paths = ast.literal_eval(
-            self.get_option("remote-skip-paths", "")
+            self.get_option("remote-skip-paths", "[]")
         )
         self.skip_private = json.loads(
             self.get_option("skip-private", "False").lower()

@@ -39,7 +39,9 @@ class ContentsMappingSection(object):
         )
 
         if options.get("exclude-type", None):
-            self.exclude_type = ast.literal_eval(options.get("exclude-type", None))
+            self.exclude_type = ast.literal_eval(
+                options.get("exclude-type", None)
+            )
 
         annotations = IAnnotations(self.context.REQUEST)
         self.items_in = annotations.setdefault(ITEMS_IN, {})
@@ -52,28 +54,25 @@ class ContentsMappingSection(object):
 
             # integrazione check del tipo all'interno di questo ciclo
             skip = False
-            if getattr(self, "exclude_type", None):
-                for type in self.exclude_type:
-                    # fathers type
-                    if item.get("fathers_type_list", None):
-                        for fathers_type in item["fathers_type_list"]:
-                            if fathers_type == type:
-                                skip = True
-                                break
-                            if skip:
-                                break
-                    else:
-                        logger.warning(
-                            "Item {0} doesn't have father".format(item["_path"])
-                        )
-                    # check obj type
-                    if item.get("_type", None):
-                        if item["_type"] == type:
-                            skip = True
-
+            for excluded_type in getattr(self, "exclude_type", []):
+                if skip:
+                    break
+                # if item is in a blacked-list type, skip it
+                for parent_type in item.get("parents_type_list", []):
+                    if parent_type == excluded_type:
+                        skip = True
+                        break
+                    if skip:
+                        break
+                # check obj type
+                if item.get("_type", None):
+                    if item["_type"] == excluded_type:
+                        skip = True
             if skip:
                 if item.get("_uid") in self.items_in:
-                    self.items_in[item.get("_uid")]["reason"] = "Skipped portal_type"
+                    self.items_in[item.get("_uid")][
+                        "reason"
+                    ] = "Skipped portal_type"
                 else:
                     self.items_in[item.get("_uid")] = {
                         "id": item.get("_id"),

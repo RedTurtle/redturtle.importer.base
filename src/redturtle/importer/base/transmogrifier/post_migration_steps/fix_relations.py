@@ -50,15 +50,21 @@ class FixRelations(object):
             for schemata in iterSchemata(obj):
                 for name, field in getFieldsInOrder(schemata):
                     if name == fieldname:
+                        resolved_value = None
                         if isinstance(value, six.string_types):
-                            value = uuidToObject(value)
+                            resolved_value = uuidToObject(value)
                         else:
-                            value = [uuidToObject(uuid) for uuid in value]
-                        deserializer = queryMultiAdapter(
-                            (field, obj), IDeserializer
-                        )
-                        value = deserializer(
-                            value, [], {}, True, logger=logger
-                        )
-                        field.set(field.interface(obj), value)
-                        notify(ObjectModifiedEvent(obj))
+                            resolved_value = [
+                                uuidToObject(uuid)
+                                for uuid in value
+                                if uuidToObject(value) is not None
+                            ]
+                        if resolved_value:
+                            deserializer = queryMultiAdapter(
+                                (field, obj), IDeserializer
+                            )
+                            value = deserializer(
+                                value, [], {}, True, logger=logger
+                            )
+                            field.set(field.interface(obj), resolved_value)
+                            notify(ObjectModifiedEvent(obj))

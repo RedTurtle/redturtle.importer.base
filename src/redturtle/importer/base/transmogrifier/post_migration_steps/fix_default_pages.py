@@ -23,8 +23,6 @@ class FixDefaultPages(object):
     def __call__(self, transmogrifier):
         """
         """
-        if not self.should_execute(transmogrifier):
-            return
         logger.info("## Fix Default Pages ##")
         for item in getattr(transmogrifier, "default_pages", []):
             try:
@@ -35,8 +33,3 @@ class FixDefaultPages(object):
                 obj.reindexObject(["is_default_page"])
             except Exception:
                 pass
-
-    def should_execute(self, transmogrifier):
-        section = transmogrifier.get("catalogsource")
-        flag = section.get("disable-post-scripts", "False").lower()
-        return flag == "false" or flag == 0

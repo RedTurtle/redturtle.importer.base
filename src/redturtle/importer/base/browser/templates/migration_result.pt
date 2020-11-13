@@ -62,6 +62,12 @@
           <section tal:define="broken_links results/broken_links">
             <h2>Broken links</h2>
             <p class="discreet">List of contents with some broken internal links in tinymce fields.</p>
+            <div>
+              <form action="${context/portal_url}/migration-results#autotoc-item-autotoc-1" method='POST'>
+                <input class="context" type="submit" value="Load broken links" name="submit">
+                <input type="hidden" name="load-links" value="true" />
+              </form> 
+            </div>
             <p tal:condition="not:broken_links">No broken links found.</p>
             <ul tal:condition="broken_links">
               <li tal:repeat="link broken_links"><a href="${link}">${link}</a></li>

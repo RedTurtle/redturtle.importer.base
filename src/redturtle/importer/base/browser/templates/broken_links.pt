@@ -1,0 +1,36 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="">
+
+  <body>
+    <metal:content-title fill-slot="content-title">
+      <metal:content-title define-macro="content-title">
+        <h1 class="documentFirstHeading">Broken links</h1>
+      </metal:content-title>
+    </metal:content-title>
+    <metal:content-title fill-slot="content-title">
+      <metal:content-title define-macro="content-title">
+        <p class="discreet">List of contents with some broken internal links in tinymce fields.</p>
+      </metal:content-title>
+    </metal:content-title>
+    <metal:content-core fill-slot="content-core">
+      <metal:content-core define-macro="content-core"
+        tal:define="broken_links view/broken_links">
+        <div>
+          <form action="${context/portal_url}/broken-links" method='POST'>
+            <input class="context" type="submit" value="Load broken links" name="submit">
+            <input type="hidden" name="load-links" value="true" />
+          </form> 
+        </div>
+        <p tal:condition="not:broken_links">No broken links found.</p>
+        <ul tal:condition="broken_links">
+          <li tal:repeat="link broken_links"><a href="${link}">${link}</a></li>
+        </ul>
+      </metal:content-core>
+    </metal:content-core>
+  </body>
+</html>

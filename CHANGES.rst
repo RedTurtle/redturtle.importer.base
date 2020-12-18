@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0.1 (unreleased)
+2.0.1 (2020-12-18)
 ------------------
 
 - Handle custom destination path.

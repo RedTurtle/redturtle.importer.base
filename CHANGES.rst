@@ -4,7 +4,8 @@ Changelog
 2.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add geolocation deserializer.
+  [cekk]
 
 
 2.0.1 (2020-12-18)

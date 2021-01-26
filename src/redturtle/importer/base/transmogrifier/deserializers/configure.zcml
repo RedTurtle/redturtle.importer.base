@@ -21,5 +21,9 @@
           <adapter factory=".relation.RelationListDeserializer" />
       </configure>
   </configure>
+  
+  <configure zcml:condition="installed plone.formwidget.geolocation">
+    <adapter factory=".geolocation.GeolocationDeserializer" />
+  </configure>
 
 </configure>

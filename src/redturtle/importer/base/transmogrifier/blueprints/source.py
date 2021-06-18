@@ -43,6 +43,7 @@ class CachedCatalogSourceSection(object):
         self.remote_password = self.get_option("remote-password", "admin")
 
         self.default_local_path = self.get_option("default-local-path", "")
+        self.base_path = self.get_option("base_path", "")
 
         # catalog_path = self.get_option("catalog-path", "/Plone/portal_catalog")
         # self.site_path_length = len("/".join(catalog_path.split("/")[:-1]))
@@ -144,6 +145,8 @@ class CachedCatalogSourceSection(object):
                     item["_path"] = item["_path"].replace(
                         self.remote_root, self.default_local_path
                     )
+                    if self.base_path:
+                        item["_path"] = self.base_path + item["_path"]
                     self.storage.append(item["_path"])
 
                     yield item
@@ -177,6 +180,7 @@ class CachedCatalogSourceSection(object):
             self.remote_url,
             six.moves.urllib.parse.quote(path),
         )
+
         resp = requests.get(
             item_url,
             params=self.payload,

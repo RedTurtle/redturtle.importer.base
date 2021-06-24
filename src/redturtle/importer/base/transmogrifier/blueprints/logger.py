@@ -28,8 +28,12 @@ class LoggerSection(object):
         self.storage = IAnnotations(api.portal.get().REQUEST).setdefault(
             VALIDATIONKEY, []
         )
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
-        self.count = IAnnotations(api.portal.get().REQUEST).setdefault(COUNTKEY, {})
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
+            ERROREDKEY, []
+        )
+        self.count = IAnnotations(api.portal.get().REQUEST).setdefault(
+            COUNTKEY, {}
+        )
 
     def __iter__(self):
         start_time = time()

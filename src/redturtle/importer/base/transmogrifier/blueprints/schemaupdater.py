@@ -57,7 +57,9 @@ class DexterityUpdateSection(object):
             self.log = lambda s: self.logger.log(self.loglevel, s)
         else:
             self.log = None
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
+            ERROREDKEY, []
+        )
 
     def __iter__(self):  #  noqa
         # need to be refactored
@@ -108,8 +110,15 @@ class DexterityUpdateSection(object):
                             ) or IRelationChoice.providedBy(
                                 field
                             ):  # noqa
+                                import pdb
+
+                                pdb.set_trace()
                                 self.transmogrifier.fixrelations.append(
-                                    ("/".join(obj.getPhysicalPath()), name, value)
+                                    (
+                                        "/".join(obj.getPhysicalPath()),
+                                        name,
+                                        value,
+                                    )
                                 )  # noqa
                             # Value was given in pipeline, so set it
                             deserializer = queryMultiAdapter(
@@ -135,7 +144,8 @@ class DexterityUpdateSection(object):
                             (obj, field), interfaces.IDataManager
                         ).query()
                         if not (
-                            value is field.missing_value or value is interfaces.NO_VALUE
+                            value is field.missing_value
+                            or value is interfaces.NO_VALUE
                         ):
                             continue
 

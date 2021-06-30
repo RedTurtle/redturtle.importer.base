@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 @adapter(Interface, Interface)
 @implementer(IPostMigrationStep)
 class FixRelations(object):
-    order = 1
+    order = 6
 
     def __init__(self, context, request):
         self.context = context
@@ -35,6 +35,7 @@ class FixRelations(object):
         # (path, fieldname, value) per le quali vanno rifatte le relations
         logger.info("## Fix Relations ##")
         relations = getattr(transmogrifier, "fixrelations", [])
+
         for (path, fieldname, value) in relations:
             if not value:
                 continue

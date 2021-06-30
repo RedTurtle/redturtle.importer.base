@@ -142,9 +142,6 @@ class CachedCatalogSourceSection(object):
             if not skip:
                 item = self.get_remote_item(path)
                 if item:
-                    import pdb
-
-                    pdb.set_trace()
                     item["_path"] = item["_path"].replace(
                         self.remote_root, self.default_local_path
                     )

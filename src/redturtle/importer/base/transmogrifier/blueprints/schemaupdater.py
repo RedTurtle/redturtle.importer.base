@@ -110,9 +110,6 @@ class DexterityUpdateSection(object):
                             ) or IRelationChoice.providedBy(
                                 field
                             ):  # noqa
-                                import pdb
-
-                                pdb.set_trace()
                                 self.transmogrifier.fixrelations.append(
                                     (
                                         "/".join(obj.getPhysicalPath()),

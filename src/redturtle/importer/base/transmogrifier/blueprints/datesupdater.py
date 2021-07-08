@@ -54,11 +54,15 @@ class DatesUpdater(object):
 
             creationdate = item.get(self.creationkey, None)
             if creationdate and hasattr(ob, "creation_date"):
-                ob.creation_date = DateTime(creationdate)
+                ob.creation_date = DateTime(
+                    creationdate.replace("UTC-0000", "")
+                )
 
             modificationdate = item.get(self.modificationkey, None)
             if modificationdate and hasattr(ob, "modification_date"):
-                ob.modification_date = DateTime(modificationdate)
+                ob.modification_date = DateTime(
+                    modificationdate.replace("UTC-0000", "")
+                )
 
             effectivedate = item.get(self.effectivekey, None)
             if not effectivedate:
@@ -69,7 +73,9 @@ class DatesUpdater(object):
                 and effectivedate != EMPTY_VALUE
                 and hasattr(ob, "effective_date")
             ):
-                ob.effective_date = DateTime(effectivedate)
+                ob.effective_date = DateTime(
+                    effectivedate.replace("UTC-0000", "")
+                )
 
             expirationdate = item.get(self.expirationkey, None)
             if expirationdate and hasattr(ob, "expiration_date"):

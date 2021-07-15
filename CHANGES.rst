@@ -4,7 +4,8 @@ Changelog
 2.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Better handle datetime and date values.
+  [cekk]
 
 
 2.0.2 (2021-02-01)

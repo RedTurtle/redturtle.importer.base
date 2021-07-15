@@ -57,7 +57,9 @@ class DexterityUpdateSection(object):
             self.log = lambda s: self.logger.log(self.loglevel, s)
         else:
             self.log = None
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
+            ERROREDKEY, []
+        )
 
     def __iter__(self):  #  noqa
         # need to be refactored
@@ -95,7 +97,6 @@ class DexterityUpdateSection(object):
                 # z3c.form.widget.py would
                 for schemata in iterSchemata(obj):
                     for name, field in getFieldsInOrder(schemata):
-
                         if name == "id":
                             continue
                         if field.readonly:
@@ -109,21 +110,24 @@ class DexterityUpdateSection(object):
                                 field
                             ):  # noqa
                                 self.transmogrifier.fixrelations.append(
-                                    ("/".join(obj.getPhysicalPath()), name, value)
+                                    (
+                                        "/".join(obj.getPhysicalPath()),
+                                        name,
+                                        value,
+                                    )
                                 )  # noqa
                             # Value was given in pipeline, so set it
                             deserializer = queryMultiAdapter(
                                 (field, obj), IDeserializer
                             )
                             try:
-                                if value:
-                                    value = deserializer(
-                                        value,
-                                        files,
-                                        item,
-                                        self.disable_constraints,
-                                        logger=self.log,
-                                    )
+                                value = deserializer(
+                                    value,
+                                    files,
+                                    item,
+                                    self.disable_constraints,
+                                    logger=self.log,
+                                )
                                 field.set(field.interface(obj), value)
                                 continue
                             except Exception:
@@ -135,7 +139,8 @@ class DexterityUpdateSection(object):
                             (obj, field), interfaces.IDataManager
                         ).query()
                         if not (
-                            value is field.missing_value or value is interfaces.NO_VALUE
+                            value is field.missing_value
+                            or value is interfaces.NO_VALUE
                         ):
                             continue
 

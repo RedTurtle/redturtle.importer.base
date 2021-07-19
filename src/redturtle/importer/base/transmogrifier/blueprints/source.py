@@ -10,6 +10,7 @@ from redturtle.importer.base.transmogrifier.utils import VALIDATIONKEY
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import implementer
 from zope.interface import provider
+from simplejson.errors import JSONDecodeError
 
 import ast
 import base64
@@ -76,7 +77,14 @@ class CachedCatalogSourceSection(object):
             params=self.payload,
             auth=(self.remote_username, self.remote_password),
         )
-        self.item_paths = resp.json()
+        try:
+            self.item_paths = resp.json()
+        except JSONDecodeError as e:
+            if resp.status_code != 200:
+                logger.error("{} - {}".format(resp.status_code, resp.reason))
+            else:
+                logger.error(resp.text)
+            raise e
         self.item_count["total"] = len(self.item_paths)
         self.item_count["remaining"] = len(self.item_paths)
 

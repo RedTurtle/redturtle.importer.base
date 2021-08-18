@@ -22,6 +22,7 @@ class DatetimeDeserializer(object):
     def __call__(
         self, value, filestore, item, disable_constraints=False, logger=None
     ):
+
         if value == "None":
             return None
         if isinstance(value, datetime):
@@ -38,7 +39,7 @@ class DatetimeDeserializer(object):
                     value = tz_default.localize(value)
                 value = value.astimezone(tz_default)
             except ValueError:
-                value = DateTime(value)
+                value = DateTime(value).asdatetime()
         try:
             self.field.validate(value)
         except Exception as e:

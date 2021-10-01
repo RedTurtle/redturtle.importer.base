@@ -46,6 +46,7 @@ setup(
         "setuptools",
         "z3c.jbot",
         "z3c.unconfigure",
+        "mergedeep",
     ],
     extras_require={
         "test": [

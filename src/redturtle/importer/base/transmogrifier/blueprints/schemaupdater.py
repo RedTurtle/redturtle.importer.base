@@ -98,7 +98,6 @@ class DexterityUpdateSection(object):
 
                 for schemata in iterSchemata(obj):
                     for name, field in getFieldsInOrder(schemata):
-
                         if name == "id":
                             continue
 
@@ -125,14 +124,13 @@ class DexterityUpdateSection(object):
                                 (field, obj), IDeserializer
                             )
                             try:
-                                if value:
-                                    value = deserializer(
-                                        value,
-                                        files,
-                                        item,
-                                        self.disable_constraints,
-                                        logger=self.log,
-                                    )
+                                value = deserializer(
+                                    value,
+                                    files,
+                                    item,
+                                    self.disable_constraints,
+                                    logger=self.log,
+                                )
                                 field.set(field.interface(obj), value)
                                 continue
                             except Exception:

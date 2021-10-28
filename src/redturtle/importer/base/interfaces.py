@@ -11,8 +11,7 @@ class IMigrationContextSteps(Interface):
 
 class IDeserializer(Interface):
     def __call__(value, filestore, item):
-        """Convert to a field value
-        """
+        """Convert to a field value"""
 
 
 class ITransmogrifier(Interface):
@@ -20,7 +19,7 @@ class ITransmogrifier(Interface):
 
     context = Attribute("The targeted IFolderish context")
 
-    def __call__(self, configuration_id, **overrides):
+    def __call__(self, configuration_id, overrides):
         """Load and execute the named pipeline configuration
 
         Any dictionaries passed in as extra keywords, are interpreted as
@@ -68,8 +67,7 @@ class IPortalTypeMapping(Interface):
     order = Attribute("The order which this adapter is run")
 
     def __init__(context, request):
-        """Adapts context and the request.
-        """
+        """Adapts context and the request."""
 
     def __call__(item):
         """
@@ -85,9 +83,7 @@ class IPostMigrationStep(Interface):
     order = Attribute("The order which this adapter is run")
 
     def __init__(context, request):
-        """Adapts context and the request.
-        """
+        """Adapts context and the request."""
 
     def __call__():
-        """
-        """
+        """ """

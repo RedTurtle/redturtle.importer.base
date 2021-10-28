@@ -36,7 +36,6 @@ class DataFields(object):
             obj = self.context.unrestrictedTraverse(
                 str(item["_path"].lstrip("/")), None
             )
-
             # path doesn't exist
             if obj is None:
                 yield item

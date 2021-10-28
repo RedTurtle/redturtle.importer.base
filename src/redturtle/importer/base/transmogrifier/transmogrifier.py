@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Test cleanup support
+from mergedeep import merge
 from Products.CMFCore.interfaces import IFolderish
 from redturtle.importer.base.interfaces import ITransmogrifier
 from redturtle.importer.base.transmogrifier.utils import (
@@ -58,9 +58,11 @@ class Transmogrifier(DictMixin):
     def __init__(self, context):
         self.context = context
 
-    def __call__(self, configuration_id, **overrides):
+    def __call__(self, configuration_id, overrides={}):
         self.configuration_id = configuration_id
-        self._raw = get_transmogrifier_configuration()
+
+        raw = get_transmogrifier_configuration()
+        self._raw = merge({}, raw, overrides)
         self._data = {}
 
         options = self._raw["transmogrifier"]

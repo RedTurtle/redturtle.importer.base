@@ -45,10 +45,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         portal = api.portal.get()
         self.transmogrifier = Transmogrifier(portal)
         # self.cleanup_log_files()
-        self.transmogrifier(
-            configuration_id=self.transmogrifier_conf,
-            **get_additional_config()
-        )
+        self.transmogrifier(configuration_id=self.transmogrifier_conf)
 
         # run scripts after migration
         self.scripts_post_migration()
@@ -67,10 +64,7 @@ class RedTurtlePlone5MigrationMain(BrowserView):
         Excecute a series of post migration steps in order
         """
         handlers = [
-            x
-            for x in subscribers(
-                (self.context, self.request), IPostMigrationStep
-            )
+            x for x in subscribers((self.context, self.request), IPostMigrationStep)
         ]
         for handler in sorted(handlers, key=lambda h: h.order):
             handler(transmogrifier=self.transmogrifier)
@@ -91,12 +85,8 @@ class MigrationResults(BrowserView):
 
     def get_results(self):
 
-        in_json = self.get_json_data(
-            option="file-name-in", section_id="catalogsource"
-        )
-        out_json = self.get_json_data(
-            option="file-name-out", section_id="results"
-        )
+        in_json = self.get_json_data(option="file-name-in", section_id="catalogsource")
+        out_json = self.get_json_data(option="file-name-out", section_id="results")
 
         results = {
             "in_count": len(list(in_json.keys())),

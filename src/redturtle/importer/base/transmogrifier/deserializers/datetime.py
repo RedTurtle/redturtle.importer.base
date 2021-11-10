@@ -25,7 +25,12 @@ class DatetimeDeserializer(object):
         if value == "None":
             return None
         if isinstance(value, datetime):
-            value = value.date()
+            # value = value.date()
+            # tz_default = default_timezone(as_tzinfo=True)
+            # if value.tzinfo is None:
+            #     value = tz_default.localize(value)
+            # value = value.astimezone(tz_default)
+            pass
         if isinstance(value, six.string_types):
             # Fix some rare use case
             if "Universal" in value:

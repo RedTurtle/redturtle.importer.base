@@ -59,16 +59,20 @@ class GenerateBrokenLinks(object):
                     except ValueError:
                         # text is not html (probably an svg)
                         continue
-                    for link in xml.xpath("//a"):
-                        match = resolveuid_re.match(link.get("href", ""))
-                        if not match:
-                            continue
-                        uid, _subpath = match.groups()
-                        obj = api.content.get(UID=uid[:32])
-                        if not obj:
-                            url = brain.getURL()
-                            if url not in broken_urls:
-                                broken_urls.append(url)
+                    try:
+                        if xml:
+                            for link in xml.xpath("//a"):
+                                match = resolveuid_re.match(link.get("href", ""))
+                                if not match:
+                                    continue
+                                uid, _subpath = match.groups()
+                                obj = api.content.get(UID=uid[:32])
+                                if not obj:
+                                    url = brain.getURL()
+                                    if url not in broken_urls:
+                                        broken_urls.append(url)
+                    except Exception:
+                        import pdb; pdb.set_trace()
         self.write_broken_links(
             paths=broken_urls, transmogrifier=transmogrifier
         )

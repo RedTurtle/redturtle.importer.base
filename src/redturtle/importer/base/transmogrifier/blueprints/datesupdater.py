@@ -36,7 +36,7 @@ class DatesUpdater(object):
         self.creationkey = "creation_date"
         self.modificationkey = "modification_date"
         self.effectivekey = "effectiveDate"
-        self.expirationkey = "expiration_date"
+        self.expirationkey = "expires"
 
     def __iter__(self):
 
@@ -79,6 +79,9 @@ class DatesUpdater(object):
 
             expirationdate = item.get(self.expirationkey, None)
             if expirationdate and hasattr(ob, "expiration_date"):
-                ob.expiration_date = DateTime(expirationdate)
+                try:
+                    ob.expiration_date = DateTime(expirationdate.replace("UTC-0000", ""))
+                except:
+                    pass
 
             yield item

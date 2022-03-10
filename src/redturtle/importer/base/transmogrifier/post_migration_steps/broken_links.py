@@ -40,7 +40,10 @@ class GenerateBrokenLinks(object):
         for brain in brains:
             if brain.portal_type in skip_types_in_link_check:
                 continue
-            item = aq_base(brain.getObject())
+            try:
+                item = aq_base(brain.getObject())
+            except:
+                continue
             for schemata in iterSchemata(item):
                 for name, field in getFieldsInOrder(schemata):
                     if not isinstance(field, RichText):

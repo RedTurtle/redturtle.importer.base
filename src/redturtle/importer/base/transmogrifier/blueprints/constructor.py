@@ -75,6 +75,7 @@ class ConstructorSection(object):
                     continue
 
             try:
+                import pdb; pdb.set_trace()
                 obj = fti._constructInstance(context, id)
             except (AttributeError, ValueError):
                 logger.exception("item:%s id:%s", item, id)

@@ -63,9 +63,11 @@ class FoldersSection(object):
                                 # We don't have this path - yield to create a
                                 # skeleton folder
                                 yield {
+                                    "title": element.replace("-", " ").replace("_", " ").capitalize(),
                                     newPathKey: "/" + currentPath,
                                     newTypeKey: self.folderType,
                                 }
+                                
                             if self.cache:
                                 self.seen.add(currentPath)
 

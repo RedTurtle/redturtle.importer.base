@@ -16,7 +16,7 @@ long_description = "\n\n".join(
 
 setup(
     name="redturtle.importer.base",
-    version="2.1.0",
+    version="2.1.1.dev0",
     description="Imports contents from a json source",
     long_description=long_description,
     # Get more from https://pypi.python.org/pypi?%3Aaction=list_classifiers

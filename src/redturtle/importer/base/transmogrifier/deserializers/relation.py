@@ -18,7 +18,7 @@ else:
 
 try:
     pkg_resources.get_distribution("z3c.relationfield")
-except:
+except Exception:
     RELATIONFIELD_AVAILABLE = False
 else:
     RELATIONFIELD_AVAILABLE = True
@@ -76,7 +76,5 @@ if INTID_AVAILABLE and RELATIONFIELD_AVAILABLE:
         def deserialize(self, value):
             result = []
             for obj in value:
-                result.append(
-                    super(RelationListDeserializer, self).deserialize(obj)
-                )
+                result.append(super(RelationListDeserializer, self).deserialize(obj))
             return result

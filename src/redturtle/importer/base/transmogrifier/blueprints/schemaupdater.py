@@ -24,6 +24,7 @@ from zope.schema import getFieldsInOrder
 
 import logging
 
+logger = logging.getLogger(__name__)
 
 _marker = object()
 
@@ -57,9 +58,7 @@ class DexterityUpdateSection(object):
             self.log = lambda s: self.logger.log(self.loglevel, s)
         else:
             self.log = None
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
-            ERROREDKEY, []
-        )
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
 
     def __iter__(self):  #  noqa
         # need to be refactored
@@ -130,7 +129,8 @@ class DexterityUpdateSection(object):
                                 )
                                 field.set(field.interface(obj), value)
                                 continue
-                            except Exception:
+                            except Exception as e:
+                                logger.exception(e)
                                 continue
 
                         # Get the widget's current value, if it has one then
@@ -139,8 +139,7 @@ class DexterityUpdateSection(object):
                             (obj, field), interfaces.IDataManager
                         ).query()
                         if not (
-                            value is field.missing_value
-                            or value is interfaces.NO_VALUE
+                            value is field.missing_value or value is interfaces.NO_VALUE
                         ):
                             continue
 
@@ -173,4 +172,8 @@ class DexterityUpdateSection(object):
                                 pass
                         field.set(field.interface(obj), default)
                 notify(ObjectModifiedEvent(obj))
+            modified = item.get("modification_date", None)
+            if modified and modified != obj.modification_date:
+                obj.modification_date = modified
+                obj.reindexObject(idxs=["modified"])
             yield item

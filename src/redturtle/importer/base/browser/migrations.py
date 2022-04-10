@@ -8,7 +8,6 @@ from redturtle.importer.base.interfaces import IPostMigrationStep
 from redturtle.importer.base.transmogrifier.transmogrifier import (
     Transmogrifier,
 )
-from redturtle.importer.base.transmogrifier.utils import get_additional_config
 from redturtle.importer.base.transmogrifier.utils import (
     get_transmogrifier_configuration,
 )

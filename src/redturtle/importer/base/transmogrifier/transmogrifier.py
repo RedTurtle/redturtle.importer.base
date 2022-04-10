@@ -144,8 +144,8 @@ class Options(DictMixin):
         return value
 
     _template_split = re.compile("([$]{[^}]*})").split
-    _valid = re.compile("\${[-a-zA-Z0-9 ._]+:[-a-zA-Z0-9 ._]+}$").match
-    _tales = re.compile("^\s*string:", re.MULTILINE).match
+    _valid = re.compile("\${[-a-zA-Z0-9 ._]+:[-a-zA-Z0-9 ._]+}$").match  # noqa
+    _tales = re.compile("^\s*string:", re.MULTILINE).match  # noqa
 
     def _sub(self, template, seen):
         parts = self._template_split(template)

@@ -13,8 +13,7 @@ EMPTY_VALUE = "None"
 @provider(ISectionBlueprint)
 @implementer(ISection)
 class DatesUpdater(object):
-    """Sets creation and modification dates on objects.
-    """
+    """Sets creation and modification dates on objects."""
 
     def __init__(self, transmogrifier, name, options, previous):
         """
@@ -74,5 +73,4 @@ class DatesUpdater(object):
             expirationdate = item.get(self.expirationkey, None)
             if expirationdate and hasattr(ob, "expiration_date"):
                 ob.expiration_date = DateTime(expirationdate)
-
             yield item

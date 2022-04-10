@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
-from datetime import datetime
-from zope.schema.interfaces import IDatetime
-from zope.schema.interfaces import IDate
 from plone.app.event.base import default_timezone
 from redturtle.importer.base.interfaces import IDeserializer
+from zope.component import adapter
 from zope.interface import implementer
 from zope.interface import Interface
-from zope.component import adapter
+from zope.schema.interfaces import IDate
+from zope.schema.interfaces import IDatetime
 
 import dateutil.parser
 import six
@@ -20,9 +19,7 @@ class DatetimeDeserializer(object):
         self.field = field
         self.context = context
 
-    def __call__(
-        self, value, filestore, item, disable_constraints=False, logger=None
-    ):
+    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
         if value == "None":
             return None
         if isinstance(value, six.string_types):
@@ -49,7 +46,8 @@ class DatetimeDeserializer(object):
                         "%s is invalid in %s: %s"
                         % (self.field.__name__, item["_path"], e)
                     )
-
+        if self.field.__name__ == "effective":
+            return value.asdatetime()
         return value
 
 
@@ -60,9 +58,7 @@ class DateDeserializer(object):
         self.field = field
         self.context = context
 
-    def __call__(
-        self, value, filestore, item, disable_constraints=False, logger=None
-    ):
+    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
         if value == "None":
             return None
         if isinstance(value, six.string_types):

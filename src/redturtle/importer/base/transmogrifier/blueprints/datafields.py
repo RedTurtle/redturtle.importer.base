@@ -22,9 +22,7 @@ class DataFields(object):
         self.context = transmogrifier.context
         self.datafield_prefix = options.get("datafield-prefix", "_datafield_")
         self.root_path_length = len(self.context.getPhysicalPath())
-        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(
-            ERROREDKEY, []
-        )
+        self.errored = IAnnotations(api.portal.get().REQUEST).setdefault(ERROREDKEY, [])
 
     def __iter__(self):
         for item in self.previous:
@@ -45,10 +43,7 @@ class DataFields(object):
             path = item["_path"]
             if path.startswith("/"):
                 path = path[1:]
-            if (
-                "/".join(obj.getPhysicalPath()[self.root_path_length :])
-                != path
-            ):
+            if "/".join(obj.getPhysicalPath()[self.root_path_length :]) != path:
                 yield item
                 continue
 
@@ -81,9 +76,7 @@ class DataFields(object):
                             field.set(field.interface(obj), value)
                 if not field:
                     logger.warning(
-                        "Can't find a suitable destination field ".format(
-                            fieldname
-                        )
+                        "Can't find a suitable destination field: {} ".format(fieldname)
                     )
 
             yield item

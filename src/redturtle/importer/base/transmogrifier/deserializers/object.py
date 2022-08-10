@@ -18,9 +18,7 @@ class ObjectDeserializer(object):
         self.field = field
         self.context = context
 
-    def __call__(
-        self, value, filestore, item, disable_constraints=False, logger=None
-    ):
+    def __call__(self, value, filestore, item, disable_constraints=False, logger=None):
         if not isinstance(value, dict):
             raise ValueError("Need a dict to convert")
         if not value.get("_class", None):
@@ -33,7 +31,7 @@ class ObjectDeserializer(object):
                 if isinstance(self.field, DictRow):
                     # NB: Should be recursing into the dict and deserializing,
                     # but that can be fixed within datagridfield
-                    return DefaultDeserializer(self.field)(
+                    return DefaultDeserializer(self.field, self.context)(
                         value,
                         filestore,
                         item,
@@ -48,8 +46,7 @@ class ObjectDeserializer(object):
         klass = resolve(value["_class"])
         if not self.field.schema.implementedBy(klass):
             raise ValueError(
-                "%s does not implemement %s"
-                % (value["_class"], self.field.schema)
+                "%s does not implemement %s" % (value["_class"], self.field.schema)
             )
         instance = klass()
 

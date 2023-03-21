@@ -4,7 +4,8 @@ Changelog
 2.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added base_path attribute.
+  [eikichi18]
 
 
 2.1.0 (2022-04-10)
